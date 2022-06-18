@@ -4,7 +4,7 @@
 
 + 弯管架构（Bent-pipe architecture）：卫星用于传递信息的典型方式。 该模型将远程控制命令发送到轨道卫星，并将传感数据传送到地球。
 
-![](Orbital Edge Computing Nanosatellite Constellations.assets/bent-pipe.png)
+![](README.assets/bent-pipe.png)
 
 ​		局限性：受限于物理系统的配置，并且随着数量的增多，弯管架构可能会崩溃。
 
@@ -18,7 +18,7 @@
 
 + 正如许多云计算服务所使用的设备趋向于用普通的物理机来进行横向扩展，而不是采用极端高性能的物理机，对于卫星而言，比起造价昂贵的 `Monolithic`，`Nanosatellite` 更适合用于扩展整个系统。
 
-  <img src="Orbital Edge Computing Nanosatellite Constellations.assets/nanosatellite.png" style="zoom: 80%;" />
+  <img src="README.assets/nanosatellite.png" style="zoom: 80%;" />
 
 + `LEO` 即Low Earth Orbit，近地轨道。
 
@@ -26,11 +26,11 @@
 
 + `GTF` 即Ground Track Frame，`CNP` 即Computational Nanosatellite Pipelines.
 
-​		![](Orbital Edge Computing Nanosatellite Constellations.assets/CNP.png)
+​		![](README.assets/CNP.png)
 
 ​		上：轨道决定地面轨迹，即卫星经过的位置。 一条地面轨道可以分成一系列地面轨道框架。通常，每个帧在处理之前都会被平铺。 		底部：`CNP` 的插图。 卫星对地面轨道帧进行成像并执行处理，直到到达下一帧。
 
-+ ![](Orbital Edge Computing Nanosatellite Constellations.assets/CNP_modes.png)
++ ![](README.assets/CNP_modes.png)
   + 一个`frame-spaced`，`tile-parallel` 的 `CNP` 将设备隔开一个 `GTF` 的距离。每个设备对每个 `GTF` 进行成像（只要有足够的能量)并处理一个瓦片子集。
   + 一个`frame-spaced`，`frame-parallel` 的 `CNP` 还将设备在距离上隔开一个 `GTF`。 每个设备对 `GTF` 的一个不同子集进行成像，并处理帧中的所有图块。 
   + 一个`close-spaced`，`tile-parallel` 的 `CNP` 将设备放置在距离很近的地方。每个设备对每个 `GTF` 进行成像并处理一个瓦片子集。
@@ -132,7 +132,9 @@ make install
 
 此时，运行 `./run_csfp_sims.sh` 指令依旧会报错：`version 'GLIBCXX_3.4.26' not found (required by xxxxxx)`
 
-这是动态链接库的问题，通过https://www.csdn.net/tags/NtTaUgwsMDQzMjItYmxvZwO0O0OO0O0O.html提供的方法成功解决（过程就是找到有 `GLIBCXX_3.4.26` 的动态链接库，然后将其复制一份到 `gcc-8.3.0-install/lib64` 目录下，改名为`libstdc++.so.6`）。
+这是动态链接库的问题，通过https://www.csdn.net/tags/NtTaUgwsMDQzMjItYmxvZwO0O0OO0O0O.html 
+
+提供的方法成功解决（过程就是找到有 `GLIBCXX_3.4.26` 的动态链接库，然后将其复制一份到 `gcc-8.3.0-install/lib64` 目录下，改名为`libstdc++.so.6`）。
 
 此时，均能运行成功。
 
