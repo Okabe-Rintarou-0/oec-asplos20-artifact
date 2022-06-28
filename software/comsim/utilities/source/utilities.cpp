@@ -112,6 +112,7 @@ namespace comsim { namespace util {
      );
   }
 
+  // 计算时间差（单位：分），用于sgp4模型所使用的的tsince参数。
   double calcTdiffMin(
    const int16_t& yearEvent, const uint8_t& monthEvent, const uint8_t& dayEvent,
    const uint8_t& hourEvent, const uint8_t& minuteEvent,

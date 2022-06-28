@@ -366,6 +366,7 @@ int main(int argc, char** argv) {
       for(size_t j=0; j<satellites.size(); j++) {
         const std::array<double,3> satEciPosn = satellites.at(j).getECIPosn();
         if(
+         // 这边在计算仰角，如果大于10度就认为该卫星对于当前的地面站而言是可见的。
          comsim::util::calcElevationDeg(JD,SEC,NS,LAT,LON,HAE,satEciPosn)>=10.0
         ) {
           gndId2VisSats[GND_ID].push_back(&(satellites.at(j)));
@@ -377,6 +378,8 @@ int main(int argc, char** argv) {
           }
         }
       }
+      // 如果当前没有卫星在当前地面站的视野范围，那么就取消卫星的占用状态，
+      // 同时清除地面站对应的当前卫星为NULL
       if(!currSatInView && gndId2CurrSat[GND_ID]!=NULL) {
         satId2Occupied[gndId2CurrSat[GND_ID]->getCatalogNumber()] = false;
         gndId2CurrSat[GND_ID] = NULL;

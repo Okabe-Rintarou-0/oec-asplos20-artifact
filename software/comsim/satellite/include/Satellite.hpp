@@ -69,9 +69,9 @@ namespace comsim {
     float raan;                   // right ascension of node in radians
     float eccentricity;           // unitless
     float argOfPerigee;           // radians
-    float meanAnomaly;            // radians
+    float meanAnomaly;            // radians 平近点角
     float meanMotion;             // radians per minute
-    std::array<double,3> eciPosn; // ECI position at current local time
+    std::array<double,3> eciPosn; // ECI position at current local time 地心惯性坐标系
     DateTime localTime;           // To be used by subclasses for fudge tricks
     const DateTime* globalTime;   // singleton, should not be deleted
     Log* log;                     // singleton, should not be deleted

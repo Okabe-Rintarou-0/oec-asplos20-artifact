@@ -63,6 +63,7 @@ int main(int argc, char** argv) {
   }
   // Build each satellite in the pipeline
   std::vector<satsim::EHSatellite*> ehsatellites;
+  // 注意到，这边的i会在下面被用作workerId。workerId会在job中被用于映射到分配的任务
   for(size_t i=0; i<pipelineDepth; i++) {
     // Orbit: 400 km altitude polar orbit (93 min period = 5580.0 sec)
     // For CSFP, all satellites are at the same radial position (0.0)
@@ -81,7 +82,7 @@ int main(int argc, char** argv) {
     // Assuming sim starts with this Cap_V, charge is Cap_V*capacity_F
     double capacity_F = 5.0;
     double esr_Ohm    = 0.168;
-    double charge_C = (nodeVoltage_V-sscCmp_A*esr_Ohm)*capacity_F;
+    double charge_C = (nodeVoltage_V-sscCmp_A*esr_Ohm)*capacity_F; //Q = CU
     satsim::Capacitor capacitor(capacity_F,esr_Ohm,charge_C,sscCmp_A,&logger);
     // Minimal energy harvesting system
     satsim::EHSystem ehsystem(*simpleSolarCell, capacitor, &logger);
@@ -124,6 +125,7 @@ int main(int argc, char** argv) {
     // Prove that the simulation should still run
     simulate = false;
     // Run simulation for each satellite
+    // 枚举所有的卫星（卫星的数量等于pipeline的深度），下面的jiPtr和ciPtr都是对应于当前卫星的Jetson和相机
     for(size_t i=0; i<ehsatellites.size(); i++) {
       satsim::EHSatellite* ehsPtr = ehsatellites.at(i);
       double ehsPosn = ehsPtr->getOrbit().getPosn();
@@ -141,6 +143,7 @@ int main(int argc, char** argv) {
         if(ciPtr->isIdle() && !ciPtr->hasImage() &&
            jobPtr->getUnclaimedTaskCount()>0) {
           // For CSFP, all tasks are claimed
+          // 分配至多tasksPerJob个任务给imager。
           jobPtr->claimTasks(ciPtr->getWorkerId(), tasksPerJob);
           ciPtr->addClaimedJob(jobPtr);
         }
@@ -148,6 +151,7 @@ int main(int argc, char** argv) {
         // ChameleonImager has completed work and Jetson is low on work
         if(ciPtr->hasImage() && jtPtr->getClaimedJobCount()==0) {
           while(ciPtr->hasImage()) {
+              // 把chameleonImager中的任务移交给jetson
             jtPtr->addClaimedJob(ciPtr->dequeImage());
           }
         }
@@ -166,6 +170,7 @@ int main(int argc, char** argv) {
       else {
         std::vector<satsim::EnergyConsumer*> ecs = ehsPtr->getEnergyConsumers();
         satsim::JetsonTX2* jtPtr = dynamic_cast<satsim::JetsonTX2*>(ecs.at(0));
+        // 只要此时jetson还在处于工作状态，那么就继续进行仿真，直到jetson完成工作。
         if(!jtPtr->isIdle()) {
           simulate = true;
           // Update

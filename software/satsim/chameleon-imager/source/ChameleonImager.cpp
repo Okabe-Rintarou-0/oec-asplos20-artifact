@@ -192,6 +192,7 @@ namespace satsim {
       else {
         this->imagingTime_sec = this->imagingTime_sec+sanitizedSeconds;
         size_t newImagingEventCount = 0;
+        // 拍摄时间超过一定值（this->imagingDuration_sec）之后，就把imagingFifo中的图像加入到readoutFifo
         while(
          this->imagingTime_sec>=this->imagingDuration_sec &&
          this->imagingFifo.size() > 0

@@ -4,9 +4,9 @@
 
 + 弯管架构（Bent-pipe architecture）：卫星用于传递信息的典型方式。 该模型将远程控制命令发送到轨道卫星，并将传感数据传送到地球。
 
-![](README.assets/bent-pipe.png)
+    ![](README.assets/bent-pipe.png)
 
-​		局限性：受限于物理系统的配置，并且随着数量的增多，弯管架构可能会崩溃。
+    局限性：受限于物理系统的配置，并且随着数量的增多，弯管架构可能会崩溃。
 
 + 现有系统在弯管架构下面临的挑战源于基本的物理限制。 地面站的地理位置和纳米卫星的轨道位置之间的时变关系限制了链路可用性，并可能导致高下行链路（downlink）延迟。 在现有系统中，间断可用的下行链路会导致数据收集和数据处理之间的高延迟（这些系统仅下行链路原始观测数据）。下行链路本身可能不可靠，容易产生丢包。另外，下行链路比特率的限制阻止了弯曲管道的扩展以适应大型星座的极端数据量，并产生了对不依赖通信的新系统架构的需求。
 
@@ -14,11 +14,11 @@
 
   > 虽然从边缘访问云可以加速计算，但任何好处都取决于回程网络的可用性。
 
-​		网络对于这种大体量的传感器已经成为了瓶颈，因为数据率已经超过了网络的最大带宽。采用边缘计算的方式，能够减轻对通信的依		赖，让系统变得**scalable**。
+  网络对于这种大体量的传感器已经成为了瓶颈，因为数据率已经超过了网络的最大带宽。采用边缘计算的方式，能够减轻对通信的依		赖，让系统变得**scalable**。
 
 + 正如许多云计算服务所使用的设备趋向于用普通的物理机来进行横向扩展，而不是采用极端高性能的物理机，对于卫星而言，比起造价昂贵的 `Monolithic`，`Nanosatellite` 更适合用于扩展整个系统。
 
-  <img src="README.assets/nanosatellite.png" style="zoom: 80%;" />
+    <img src="README.assets/nanosatellite.png" style="zoom: 80%;"  alt=""/>
 
 + `LEO` 即Low Earth Orbit，近地轨道。
 
@@ -26,9 +26,9 @@
 
 + `GTF` 即Ground Track Frame，`CNP` 即Computational Nanosatellite Pipelines.
 
-​		![](README.assets/CNP.png)
+    ![](README.assets/CNP.png)
 
-​		上：轨道决定地面轨迹，即卫星经过的位置。 一条地面轨道可以分成一系列地面轨道框架。通常，每个帧在处理之前都会被平铺。 		底部：`CNP` 的插图。 卫星对地面轨道帧进行成像并执行处理，直到到达下一帧。
+    上：轨道决定地面轨迹，即卫星经过的位置。 一条地面轨道可以分成一系列地面轨道框架。通常，每个帧在处理之前都会被平铺。 		底部：`CNP` 的插图。 卫星对地面轨道帧进行成像并执行处理，直到到达下一帧。
 
 + ![](README.assets/CNP_modes.png)
   + 一个`frame-spaced`，`tile-parallel` 的 `CNP` 将设备隔开一个 `GTF` 的距离。每个设备对每个 `GTF` 进行成像（只要有足够的能量)并处理一个瓦片子集。
@@ -60,9 +60,39 @@
 
     > cote models the maximum achievable bitrate under received signal power for downlink, crosslink, and uplink channels
 
+### TLE格式和SGP4模型
+
+`TLE` 即 `TLE，Two-Line Orbital Element`，意为两行轨道数据。`TLE` 
+主要参数项包括**平均角速度**，**偏心率**，**轨道倾角**，**近地点辐角**，
+**升交点赤经**，**平近点角**，**平均角速度的一阶导数**和**归一化大气阻尼调制系数（bstar）**。
+
+以下是一个TLE文件的实例：
+```
+flock 3k 3
+1 43892U 18111S   19193.68092670  .00002615  00000-0  10917-3 0  9994
+2 43892  97.2888  98.1666 0022265 273.4726  86.3966 15.24309684 30096
+```
+
+![](README.assets/TLE.png)
+
+可以通过 http://celestrak.com/NORAD/elements/ 或 https://www.space-track.org/auth/login 这两个网址获取卫星的 `TLE` 数据。
+
+TLE轨道报计算卫星轨道需要用到 `NORAD` 开发的 `SGP4/SDP4` 模型。
+`SGP4模型`是由 `Ken Cranford` 在1970年开发的，用于近地卫星。
+该模型是对 `Lane` 和 `Cranford` 广泛解析理论的简化。
+这些模型需考虑到地球非球形引力、日月引力、太阳辐射压及大气阻力等摄动力的影响。
+`SGP4(Simplified General Perturbations)` 即简化常规摄动模型，可以应用于轨道周期小于225分钟的近地球物体。 
+`SDP4 (Simplified Deep Space Perturbations)` 即简化深空摄动模型，应用于远离地球或者轨道周期大于225分钟的物体。 
+如果将TLE轨道报代入 `SGP4` 模型，可以成功地对轨道周期小于225分的空间目标进行预测，求解出目标物体在任意时刻的位置和速度。
+
+## 论文中未考虑的内容
++ 卫星间的通信问题。该论文主要侧重点在于对于能量和下行链路的模拟，但是没有考虑到星间通信。
+
 ## 环境配置
 
-根据论文末尾的链接我们能找到项目的地址：https://github.com/CMUAbstract/oec-asplos20-artifact。该项目的README中提供了详细的环境搭建步骤。但是可能因为我使用的是 ubuntu20.04，而项目使用的是 ubuntu18.04，在执行脚本 `./setup_dependencies.sh $HOME/sw` 下载 `gcc8.3.0` 的时候出错。不过重点是下载gcc，只要下载了正确版本的gcc就行，所以我尝试自己手动下载编译gcc，以下是我踩的一些坑。
+根据论文末尾的链接我们能找到项目的地址：https://github.com/CMUAbstract/oec-asplos20-artifact
+
+该项目的README中提供了详细的环境搭建步骤。但是可能因为我使用的是 ubuntu20.04，而项目使用的是 ubuntu18.04，在执行脚本 `./setup_dependencies.sh $HOME/sw` 下载 `gcc8.3.0` 的时候出错。不过重点是下载gcc，只要下载了正确版本的gcc就行，所以我尝试自己手动下载编译gcc，以下是我踩的一些坑。
 
 以下是安装步骤（参考自https://www.cnblogs.com/dakewei/p/10737149.html）：
 

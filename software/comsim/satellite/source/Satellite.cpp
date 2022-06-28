@@ -51,6 +51,7 @@ namespace comsim {
      std::get<4>(dt),std::get<5>(dt),std::get<6>(dt)
     );
     // Parse TLE drag term
+    // BSTAR拖调制系数，采用十进制小数，适用GP4一般摄动理论的情况下、BSTAR大气阻力这一项，除此之外为辐射压系数。 BSTAR拖调制系数的单位是1/(地球半径)。
     this->bstar =
      std::stof(line.substr(53,1)+"0."+line.substr(54,5)+"e"+line.substr(59,2));
     // TLE line 2

@@ -36,7 +36,7 @@ namespace satsim {
     virtual void update(const double& seconds);
   private:
     double vmp_V;
-    double imp_A;
+    double imp_A; // 这个电流是恒定的。
     double simTime_sec;
     void updateInstantaneousCurrent();
   };

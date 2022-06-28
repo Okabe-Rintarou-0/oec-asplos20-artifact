@@ -158,12 +158,14 @@ namespace satsim {
     // Update each energy consuming device and get the total current draw
     double deviceCurrent_A = 0.0;
     for(size_t i=0; i<this->energyConsumers.size(); i++) {
+      // 设备是并联的。
       energyConsumers.at(i)->setVoltage(this->nodeVoltage_V);
       energyConsumers.at(i)->update(sanitizedSeconds);
       deviceCurrent_A += energyConsumers.at(i)->getCurrent();
     }
     updateTotalPower(); // call this anytime energy consumers may have changed
     // Update capacitor
+    // harvestCurrent_A 和 deviceCurrent_A 方向相反，一个产生电流一个消耗电流
     capacitor.setCurrent(harvestCurrent_A-deviceCurrent_A);
     capacitor.update(sanitizedSeconds);
     // Update simulation time
@@ -171,6 +173,9 @@ namespace satsim {
   }
 
   double EHSystem::calculateDiscriminant() const {
+    // 这边的discriminant即判别式，也就是后面用到的一元二次方程的判别式
+    // E = IR + Q/C
+    // E^2 - 4RP，在下一个函数会解释为什么是4RP
     return
      std::pow(
       energyHarvester->getCurrent()*capacitor.getEsr() +
@@ -179,6 +184,10 @@ namespace satsim {
   }
 
   double EHSystem::calculateNodeVoltage() const {
+    // 为了获取最大的输出功率，这边认为设备的内阻和电容的内阻相同
+    // 我们假设设备的电压为V，则根据基尔霍夫定律，可得V + P/V*R = E
+    // 由此可得一元二次方程：V^2 - EV + PR = 0，于是得到上面提及的判别式△=E^2 - 4PR
+    // 同时，方程的解为1/2(E + √(E^2 - 4PR))
     return
      (
       energyHarvester->getCurrent()*capacitor.getEsr() +

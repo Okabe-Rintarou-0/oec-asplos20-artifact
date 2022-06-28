@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="CSFPBase"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="csfp_base">
+				<Option output="D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/csfp_base.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/ilog/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/isim/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/iwork/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/logger/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/job/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/energy-harvester/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/simple-solar-cell/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/energy-storage/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/capacitor/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/energy-consumer/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/jetson-tx2/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/mai-adacs/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/chameleon-imager/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/eh-system/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/orbit/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/satellite/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/eh-satellite/include"/>
+					<Add directory="C:/Program Files (x86)/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/../lib/gcc/i686-w64-mingw32/8.1.0/include/c++"/>
+					<Add directory="C:/Program Files (x86)/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/../lib/gcc/i686-w64-mingw32/8.1.0/include/c++/i686-w64-mingw32"/>
+					<Add directory="C:/Program Files (x86)/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/../lib/gcc/i686-w64-mingw32/8.1.0/include/c++/backward"/>
+					<Add directory="C:/Program Files (x86)/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/../lib/gcc/i686-w64-mingw32/8.1.0/include"/>
+					<Add directory="C:/Program Files (x86)/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/../lib/gcc/i686-w64-mingw32/8.1.0/include-fixed"/>
+					<Add directory="C:/Program Files (x86)/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/../lib/gcc/i686-w64-mingw32/8.1.0/../../../../i686-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 csfp_base"/>
+					<CompileFile command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="csfp_base/fast">
+				<Option output="D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/csfp_base.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/ilog/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/isim/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/iwork/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/logger/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/job/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/energy-harvester/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/simple-solar-cell/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/energy-storage/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/capacitor/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/energy-consumer/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/jetson-tx2/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/mai-adacs/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/chameleon-imager/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/eh-system/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/orbit/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/satellite/include"/>
+					<Add directory="D:/oec-asplos20-artifact/artifacts/csfp-base/source/../../../software/satsim/eh-satellite/include"/>
+					<Add directory="C:/Program Files (x86)/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/../lib/gcc/i686-w64-mingw32/8.1.0/include/c++"/>
+					<Add directory="C:/Program Files (x86)/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/../lib/gcc/i686-w64-mingw32/8.1.0/include/c++/i686-w64-mingw32"/>
+					<Add directory="C:/Program Files (x86)/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/../lib/gcc/i686-w64-mingw32/8.1.0/include/c++/backward"/>
+					<Add directory="C:/Program Files (x86)/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/../lib/gcc/i686-w64-mingw32/8.1.0/include"/>
+					<Add directory="C:/Program Files (x86)/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/../lib/gcc/i686-w64-mingw32/8.1.0/include-fixed"/>
+					<Add directory="C:/Program Files (x86)/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/../lib/gcc/i686-w64-mingw32/8.1.0/../../../../i686-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 csfp_base/fast"/>
+					<CompileFile command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/PROGRA~2/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/mingw32-make.exe -f &quot;D:/oec-asplos20-artifact/artifacts/csfp-base/source/cmake-build-debug-mingw/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="D:/oec-asplos20-artifact/artifacts/csfp-base/source/csfp-base.cpp">
+			<Option target="csfp_base"/>
+		</Unit>
+		<Unit filename="D:/oec-asplos20-artifact/software/satsim/capacitor/source/Capacitor.cpp">
+			<Option target="csfp_base"/>
+		</Unit>
+		<Unit filename="D:/oec-asplos20-artifact/software/satsim/chameleon-imager/source/ChameleonImager.cpp">
+			<Option target="csfp_base"/>
+		</Unit>
+		<Unit filename="D:/oec-asplos20-artifact/software/satsim/eh-satellite/source/EHSatellite.cpp">
+			<Option target="csfp_base"/>
+		</Unit>
+		<Unit filename="D:/oec-asplos20-artifact/software/satsim/eh-system/source/EHSystem.cpp">
+			<Option target="csfp_base"/>
+		</Unit>
+		<Unit filename="D:/oec-asplos20-artifact/software/satsim/energy-consumer/source/EnergyConsumer.cpp">
+			<Option target="csfp_base"/>
+		</Unit>
+		<Unit filename="D:/oec-asplos20-artifact/software/satsim/energy-harvester/source/EnergyHarvester.cpp">
+			<Option target="csfp_base"/>
+		</Unit>
+		<Unit filename="D:/oec-asplos20-artifact/software/satsim/energy-storage/source/EnergyStorage.cpp">
+			<Option target="csfp_base"/>
+		</Unit>
+		<Unit filename="D:/oec-asplos20-artifact/software/satsim/jetson-tx2/source/JetsonTX2.cpp">
+			<Option target="csfp_base"/>
+		</Unit>
+		<Unit filename="D:/oec-asplos20-artifact/software/satsim/job/source/Job.cpp">
+			<Option target="csfp_base"/>
+		</Unit>
+		<Unit filename="D:/oec-asplos20-artifact/software/satsim/logger/source/Logger.cpp">
+			<Option target="csfp_base"/>
+		</Unit>
+		<Unit filename="D:/oec-asplos20-artifact/software/satsim/mai-adacs/source/MAIAdacs.cpp">
+			<Option target="csfp_base"/>
+		</Unit>
+		<Unit filename="D:/oec-asplos20-artifact/software/satsim/orbit/source/Orbit.cpp">
+			<Option target="csfp_base"/>
+		</Unit>
+		<Unit filename="D:/oec-asplos20-artifact/software/satsim/satellite/source/Satellite.cpp">
+			<Option target="csfp_base"/>
+		</Unit>
+		<Unit filename="D:/oec-asplos20-artifact/software/satsim/simple-solar-cell/source/SimpleSolarCell.cpp">
+			<Option target="csfp_base"/>
+		</Unit>
+		<Unit filename="D:/oec-asplos20-artifact/artifacts/csfp-base/source/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

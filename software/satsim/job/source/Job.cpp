@@ -37,6 +37,8 @@ namespace satsim {
     return this->unclaimedTasks;
   }
 
+  // 分配任务，如果当前没有被分配的任务的数量小于给定的第二个参数count
+  // 那么，会分配所有的任务。
   void Job::claimTasks(const size_t& workerId, const size_t& count) {
     if(this->workerIdToClaimedTaskCount.count(workerId)==0) {
       this->workerIdToClaimedTaskCount[workerId] = 0;
