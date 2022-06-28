@@ -171,6 +171,7 @@ int main(int argc, char** argv) {
         std::vector<satsim::EnergyConsumer*> ecs = ehsPtr->getEnergyConsumers();
         satsim::JetsonTX2* jtPtr = dynamic_cast<satsim::JetsonTX2*>(ecs.at(0));
         // 只要此时jetson还在处于工作状态，那么就继续进行仿真，直到jetson完成工作。
+        // 只要有一个jetson处于工作状态那么仿真就会继续
         if(!jtPtr->isIdle()) {
           simulate = true;
           // Update
@@ -195,6 +196,7 @@ int main(int argc, char** argv) {
     //            << std::endl;
     //}
   }
+  // 仿真结束，此时所有的jetson都已经完成了工作从而进入了IDLE的状态。
   // Simulation is over, all Jetsons are in idle mode
   for(size_t i=0; i<ehsatellites.size(); i++) {
     satsim::EHSatellite* ehsPtr = ehsatellites.at(i);
