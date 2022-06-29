@@ -46,6 +46,7 @@ namespace comsim {
     std::tuple<int16_t,uint8_t,uint8_t,uint8_t,uint8_t,uint8_t,uint32_t> dt =
      util::getTleEpoch(tleFile);
     // Record TLE epoch
+    // TLE 中记录了卫星发射的日期
     this->tleEpoch = DateTime(
      std::get<0>(dt),std::get<1>(dt),std::get<2>(dt),std::get<3>(dt),
      std::get<4>(dt),std::get<5>(dt),std::get<6>(dt)

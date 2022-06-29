@@ -101,6 +101,9 @@ int main(int argc, char** argv) {
       it++;
     }
     // Get ground station file paths
+    // 传入的是地面站的文件所处的目录，这个目录是在 prep_cs_scenarios.sh 脚本中通过
+    // python3 populate_gnd_ring.py 0.0 0.0 $((10#$gnd_count)) 0 ../data/$orbit-$gnd_config-$gnd_count/gnd/
+    // 生成的。
     std::filesystem::path llhdir(argv[5]);
     it = std::filesystem::directory_iterator(llhdir);
     while(it!=std::filesystem::end(it)) {
@@ -160,6 +163,7 @@ int main(int argc, char** argv) {
   std::getline(dateTimeHandle,line); // Read header
   std::getline(dateTimeHandle,line); // Read values
   dateTimeHandle.close();
+  // 对应于  /dt/date-time.dat 中的数据
   int16_t year = static_cast<int16_t>(std::stoi(line.substr(0,4)));
   uint8_t month = static_cast<uint8_t>(std::stoi(line.substr(5,2)));
   uint8_t day = static_cast<uint8_t>(std::stoi(line.substr(8,2)));
@@ -169,11 +173,13 @@ int main(int argc, char** argv) {
   uint32_t nanosecond = static_cast<uint32_t>(std::stoi(line.substr(20,9)));
   comsim::DateTime dateTime(year,month,day,hour,minute,second,nanosecond);
   // Set up constellation configuration parameters
+  // 对应于 sim-common/sat/cs-planet.dat 中的数据
   std::ifstream constellationHandle(constellationFile.string());
   line = "";
   std::getline(constellationHandle,line); // Read header
   std::getline(constellationHandle,line); // Read values
   constellationHandle.close();
+  // count 对应于卫星的数量。剩下的 timeStep 为卫星之间的距离对应的时间间隔
   uint16_t count = static_cast<uint16_t>(std::stoi(line.substr(0,5)));
   uint8_t hourStep = static_cast<uint8_t>(std::stoi(line.substr(6,2)));
   uint8_t minuteStep = static_cast<uint8_t>(std::stoi(line.substr(9,2)));
@@ -191,6 +197,7 @@ int main(int argc, char** argv) {
     satellites.back().setLocalTime(localTime);
     localTime.update(hourStep,minuteStep,secondStep,nanosecondStep);
   }
+  // 按照 catalogNumber 升序排序
   std::sort(
    satellites.begin(), satellites.end(),
    [](const comsim::Satellite& s1, const comsim::Satellite& s2) {
@@ -198,6 +205,7 @@ int main(int argc, char** argv) {
    }
   );
   // Set up satellite sensors
+  // 对应于 sim-common/sensor/sensor.dat 其中的 focal length 为焦距
   std::ifstream sensorHandle(sensorFile.string());
   line = "";
   std::getline(sensorHandle,line); // Read header
@@ -210,6 +218,7 @@ int main(int argc, char** argv) {
   const double threshCoeff =
    (static_cast<double>(pixelCount)*pixelSizeM/focalLengthM);
   std::map<uint32_t,comsim::Sensor*> satId2Sensor;
+  // 为每个卫星创建其对应的传感器，并且设定传感器所需要的参数。
   for(size_t i=0; i<satellites.size(); i++) {
     uint32_t id = satellites.at(i).getCatalogNumber();
     satId2Sensor[id] = new comsim::Sensor(&dateTime,id,&log);
@@ -221,6 +230,7 @@ int main(int argc, char** argv) {
     satId2Sensor[id]->setECIPosn(satellites.at(i).getECIPosn());
   }
   // Set up ground stations
+  // 对应于
   std::vector<comsim::GroundStation> groundStations;
   for(size_t i=0; i<gndFiles.size(); i++) {
     std::ifstream gndHandle(gndFiles.at(i).string());
@@ -472,10 +482,12 @@ int main(int argc, char** argv) {
      static_cast<uint32_t>(comsim::cnst::MIN_PER_HOUR)*
      static_cast<uint32_t>(comsim::cnst::SEC_PER_MIN);
     const uint32_t CURR_NS = currDateTime.getNanosecond();
+    // subpoint 即投影点
     const double CURR_LAT = comsim::util::calcSubpointLatitude(currPosn);
     const double CURR_LON = comsim::util::calcSubpointLongitude(
      CURR_JD, CURR_SEC, CURR_NS, currPosn
     );
+    // 计算和上次的间距，如果距离大于阈值，那么就触发 sense event。
     const double distance = comsim::util::calcGreatCircleArc(
      CURR_LON, CURR_LAT, PREV_LON, PREV_LAT
     )*comsim::cnst::WGS_84_A;
@@ -572,6 +584,13 @@ int main(int argc, char** argv) {
     dateTime.update(10000000); // 1 centisecond
     for(size_t i=0; i<satellites.size(); i++) {
       const uint32_t SAT_ID = satellites.at(i).getCatalogNumber();
+      // 此处会更新卫星的 localTime（一个用于trick的field，配合前面的hourStep等step使用。因为卫星之间有一定距离，然后这个距离
+      // 可以用 time step 进行衡量，所以在前面有一段代码会更新localTime，并且将localTime分配给新创建的卫星，使得每个卫星的localTime
+      // 都能够间隔一个 time step，所以这是一个小trick）
+      // 同时，在此处也会对 localTime 进行更新，所有的卫星都会更新 localTime。
+      // 更新 localTime 是为了后续计算 ECI 坐标。ECI 坐标是通过 SGP4 模型计算的。该模型需要 tsince 这个参数，也就是近地轨道物体运动的时间。
+      // 不难发现，在使用 util::sgp4 这个函数的时候，都会调用 util::calcTDiffMin 这个函数。该函数会简单地计算时间差，以分为单位
+      // 对于 sgp4 函数而言，计算的是 tsince，也就是 localTime 和 tleEpoch 的时间差。
       satellites.at(i).update(10000000); // 1 centisecond
       satId2Sensor[SAT_ID]->setECIPosn(satellites.at(i).getECIPosn());
       satId2Sensor[SAT_ID]->update(10000000); // 1 centisecond
