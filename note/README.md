@@ -61,7 +61,7 @@
     > cote models the maximum achievable bitrate under received signal power for downlink, crosslink, and uplink channels
 
 ### ECI
-`ECI` 坐标系即地心惯性坐标系。其用XYZ表示，原点为地球中心，X轴值向春分点，既黄道平面(地球绕太阳公转的平面)与赤道的交点。
+`ECI` 坐标系即地心惯性坐标系。其用 XYZ 表示，原点为地球中心，X 轴值向春分点，既黄道平面（地球绕太阳公转的平面）与赤道的交点。
 
 ### HAE 
 `HAE` 即 `Height Above Ellipsoid`。
@@ -187,19 +187,18 @@ make install
 
 仿真是在后台跑的，可以用 `top` 指令查看情况。因为很占 cpu ，同一时间建议只跑一个。
 
-仿真分为两个部分，第一个部分是对于能源的仿真，可以查看 `csfp-base` 中的相关代码，没有涉及任何通信的相关代码，个人认为这边仿真的是任务已经被
-分发到卫星 pipeline 上进行边缘计算的场景。 
+仿真分为两个部分，第一个部分是对于能源的仿真，可以查看 `csfp-base` 中的相关代码，没有涉及任何通信的相关代码，个人认为这边仿真的是任务已经被分发到卫星 pipeline 上进行边缘计算的场景。 
 这一部分主要通过对太阳能电池（`satsim::SimpleSolarCell`），超级电容（`satsim::Capacitor`），以及几个能源消耗设备（`Energy consumer`）： `satsim::JetsonTX2`，
 `satsim::ChameleonImager` 等（前者负责机器学习相关计算，后者负责摄影）。上面提及的这些设备都继承了 `ISim` 这个抽象类。这个抽象类有个方法叫做 
 `update`，是仿真逻辑的关键所在。
 
 另一部分则是对于上行链路和下行链路等通信相关内容进行仿真。仿真会先读取解析实现准备好的 `datetime`，传感器参数，`TLE` 数据文件等等，以准备进行仿真。
 在进行仿真的时候，会将TLE中的数据代入 `SGP4` 模型，以获取卫星当前的 ECI 坐标系坐标。
-这个坐标会被用于计算该卫星相对于地面站的仰角，如果大于等于10度，
+这个坐标会被用于计算该卫星相对于地面站的仰角，如果大于等于 10 度，
 那么就会被认定为是可见的。
 
 以 `sim-cs` 为例，需要跑 sim-cs/scripts/run_cs_scenarios.sh 这个脚本。
-在这个脚本中，首先需要通过 prep_cs_scenarios.sh 生成仿真所需要的所有的文件和目录。我们先关注 prep_cs_scenarios.sh 这个脚本的逻辑。
+在这个脚本中，首先需要通过 `prep_cs_scenarios.sh` 生成仿真所需要的所有的文件和目录。我们先关注 `prep_cs_scenarios.sh` 这个脚本的逻辑。
 
 首先，该脚本创建 data 和 logs 两个目录，用于存放仿真所需要的数据以及仿真的日志文件。接着，枚举三种卫星，也就是 `planet 鸽群卫星`，`spacex 星链卫星` 和 
 `spire 卫星`。 然后枚举地面站的数量，在每一轮枚举中，都会有三种 `gnd_config`：`eq`（赤道），`ns`（南北极）以及 `un`（大学）。我们对三种情况逐个分析：
@@ -249,8 +248,8 @@ make install
     在给这个脚本传递参数的时候，实际上使用到了前面生成的地面站数据和卫星数据。该脚本会读取指定拓展名的文件，并生成同等数量的 `CSV` 文件，文件的格式为：
     `[id, max_gain(dB), center_frequency(Hz), bandwidth(Hz)]`。文件名格式为：`rx-000...id.dat`，`id` 为设备的 `id`， 前面会填充若干个 0，以达到 10 位。
     
-    在给这个脚本传参数的时候，`max_gain_db`，`center_frequency_hz`，`bandwidth_hz` 这三个参数会被用于对通信的仿真。在上面展示的脚本中，这三个参数是直接被指定的，而没有
-    读取外部配置文件。如果需要对通信设备进行修改，请注意这块内容。
+    在给这个脚本传参数的时候，`max_gain_db`，`center_frequency_hz`，`bandwidth_hz` 这三个参数会被用于对通信的仿真。在上面展示的脚本中，这三个参数是直接被指定的，
+    而没有读取外部配置文件。如果需要对通信设备进行修改，请注意这块内容。
     
     ```shell script
     python3 populate_tx.py ../data/$orbit-$gnd_config-$gnd_count/gnd/ dat 10.0 -1.0 15.5 436.5e6 60.0e3 ../data/$orbit-$gnd_config-$gnd_count/tx-gnd/
@@ -274,7 +273,7 @@ make install
     python3 populate_gnd_ring.py  87.0 0.0 $(( $((10#$gnd_count))/2 )) 90000 ../data/$orbit-$gnd_config-$gnd_count/gnd/
     python3 populate_gnd_ring.py -87.0 0.0 $(( $((10#$gnd_count))/2 )) 91000 ../data/$orbit-$gnd_config-$gnd_count/gnd/
     ```
-    这边是两极的地面站，所以使用的维度为 ±87.0度，且平分数量。`id` 也有所不同。
+    这边是两极的地面站，所以使用的维度为 ±87.0 度，且平分数量。`id` 也有所不同。
     
 + `un`，`university ground stations`：
     与前两个几乎一致，但是地面站的经纬度信息不是通过 `populate_gnd_ring` 脚本生成的。
