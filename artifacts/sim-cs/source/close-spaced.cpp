@@ -230,7 +230,6 @@ int main(int argc, char** argv) {
     satId2Sensor[id]->setECIPosn(satellites.at(i).getECIPosn());
   }
   // Set up ground stations
-  // 对应于
   std::vector<comsim::GroundStation> groundStations;
   for(size_t i=0; i<gndFiles.size(); i++) {
     std::ifstream gndHandle(gndFiles.at(i).string());

@@ -14,7 +14,7 @@
 
   > 虽然从边缘访问云可以加速计算，但任何好处都取决于回程网络的可用性。
 
-  网络对于这种大体量的传感器已经成为了瓶颈，因为数据率已经超过了网络的最大带宽。采用边缘计算的方式，能够减轻对通信的依		赖，让系统变得**scalable**。
+  网络对于这种大体量的传感器已经成为了瓶颈，因为数据率已经超过了网络的最大带宽。采用边缘计算的方式，能够减轻对通信的依赖，让系统变得**scalable**。
 
 + 正如许多云计算服务所使用的设备趋向于用普通的物理机来进行横向扩展，而不是采用极端高性能的物理机，对于卫星而言，比起造价昂贵的 `Monolithic`，`Nanosatellite` 更适合用于扩展整个系统。
 
@@ -61,7 +61,7 @@
     > cote models the maximum achievable bitrate under received signal power for downlink, crosslink, and uplink channels
 
 ### ECI
-`ECI` 坐标系即地心惯性坐标系。其用 XYZ 表示，原点为地球中心，X 轴值向春分点，既黄道平面（地球绕太阳公转的平面）与赤道的交点。
+`ECI` 坐标系即地心惯性坐标系。其用 XYZ 表示，原点为地球中心，X 轴值向春分点，即黄道平面（地球绕太阳公转的平面）与赤道的交点。
 
 ### HAE 
 `HAE` 即 `Height Above Ellipsoid`。
@@ -192,9 +192,13 @@ make install
 `satsim::ChameleonImager` 等（前者负责机器学习相关计算，后者负责摄影）。上面提及的这些设备都继承了 `ISim` 这个抽象类。这个抽象类有个方法叫做 
 `update`，是仿真逻辑的关键所在。
 
+流程图：
+
+![](README.assets/csfp-base.svg)
+
 另一部分则是对于上行链路和下行链路等通信相关内容进行仿真。仿真会先读取解析实现准备好的 `datetime`，传感器参数，`TLE` 数据文件等等，以准备进行仿真。
 在进行仿真的时候，会将TLE中的数据代入 `SGP4` 模型，以获取卫星当前的 ECI 坐标系坐标。
-这个坐标会被用于计算该卫星相对于地面站的仰角，如果大于等于 10 度，
+这个坐标会被用于计算该卫星相对于地面站的仰角，如果大于等于 10度，
 那么就会被认定为是可见的。
 
 以 `sim-cs` 为例，需要跑 sim-cs/scripts/run_cs_scenarios.sh 这个脚本。
@@ -273,7 +277,7 @@ make install
     python3 populate_gnd_ring.py  87.0 0.0 $(( $((10#$gnd_count))/2 )) 90000 ../data/$orbit-$gnd_config-$gnd_count/gnd/
     python3 populate_gnd_ring.py -87.0 0.0 $(( $((10#$gnd_count))/2 )) 91000 ../data/$orbit-$gnd_config-$gnd_count/gnd/
     ```
-    这边是两极的地面站，所以使用的维度为 ±87.0 度，且平分数量。`id` 也有所不同。
+    这边是两极的地面站，所以使用的维度为 ±87.0度，且平分数量。`id` 也有所不同。
     
 + `un`，`university ground stations`：
     与前两个几乎一致，但是地面站的经纬度信息不是通过 `populate_gnd_ring` 脚本生成的。
@@ -291,6 +295,9 @@ make install
     `unis.dat` 文件中包含各个大学地面站的 `id`，名称，经度和纬度。脚本中稳定会解析读取 `CMU` 的地面站，然后根据给定的 `n` 随机选定剩下的
     `n-1` 个大学地面站。生成的文件内容和名称和前面提及的都是类似的。
     
+流程图：
+
+![](README.assets/sim-cs.svg)
 
 我们可以按照最外部根目录下 README 文件中的指示，分析日志文件并作图。关于解析日志文件和绘制相应的图像，请着重查看以下三个脚本：
 + scripts/csfp_coverage.py
@@ -299,8 +306,7 @@ make install
 
 分别对应论文附录中提及的三个 Metrics：
 
->    Metrics: Percent data not downlinked per revolution; average system ground track frame latency; fraction of ground
-    track processed per revolution (coverage)
+>    Metrics: Percent data not downlinked per revolution; average system ground track frame latency; fraction of ground track processed per revolution (coverage)
 
 + 对于 `csfp_coverage.py`：
   
@@ -349,4 +355,3 @@ make install
     当距离大于阈值的时候，会触发 `sense event`，并将其记录到日志文件。 这里的 `sense event` 的触发就意味着需要对一个 `gtf` 进行采样。
     
     在 `collate_downlink_deficit.py` 脚本中，会通过这两种日志文件计算 `downlink deficit`，其实也就是还欠地面站多少百分比的数据。
-  
