@@ -113,16 +113,16 @@ int main(int argc, char** argv) {
   ehsystem.addEnergyConsumer(maiadacs);
   // Push back new energy harvesting satellite
   ehsatellites.push_back(new satsim::EHSatellite(orbit, ehsystem, &logger));
-  // Run simulation
+  // Run sim-compose
   //const double STEP = 0.00314159265358979323846;
   //double thresh     = 0.00314159265358979323846;
   //double percent    = 0.0;
   double simTime_sec = 0.0;
   bool simulate = true;
   while(simulate) {
-    // Prove that the simulation should still run
+    // Prove that the sim-compose should still run
     simulate = false;
-    // Run simulation for each satellite
+    // Run sim-compose for each satellite
     for(size_t i=0; i<ehsatellites.size(); i++) {
       satsim::EHSatellite* ehsPtr = ehsatellites.at(i);
       double ehsPosn = ehsPtr->getOrbit().getPosn();

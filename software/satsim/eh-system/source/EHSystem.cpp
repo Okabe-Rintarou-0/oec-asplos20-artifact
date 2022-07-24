@@ -168,7 +168,7 @@ namespace satsim {
     // harvestCurrent_A 和 deviceCurrent_A 方向相反，一个产生电流一个消耗电流
     capacitor.setCurrent(harvestCurrent_A-deviceCurrent_A);
     capacitor.update(sanitizedSeconds);
-    // Update simulation time
+    // Update sim-compose time
     this->simTime_sec += sanitizedSeconds;
   }
 

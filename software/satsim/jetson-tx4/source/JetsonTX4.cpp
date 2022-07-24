@@ -281,7 +281,7 @@ namespace satsim {
         }
       }
     }
-    // Update simulation time
+    // Update sim-compose time
     this->simTime_sec += sanitizedSeconds;
   }
 

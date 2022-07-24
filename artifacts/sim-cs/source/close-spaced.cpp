@@ -347,7 +347,7 @@ int main(int argc, char** argv) {
   // Simulation loop
   size_t centisecondCount = 0;
   while(centisecondCount<1080000) { // three hours, i.e. approximately 2 revs
-    // Prepare simulation data
+    // Prepare sim-compose data
     //// Clear active channels
     downlinks.clear();
     uplinks.clear();
@@ -579,7 +579,7 @@ int main(int argc, char** argv) {
         );
       }
     }
-    // Update simulation to the next second
+    // Update sim-compose to the next second
     dateTime.update(10000000); // 1 centisecond
     for(size_t i=0; i<satellites.size(); i++) {
       const uint32_t SAT_ID = satellites.at(i).getCatalogNumber();

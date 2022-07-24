@@ -10,3 +10,5 @@ Makefile
 
 # Python virtual environment
 p3-env/
+
+**/cmake-build*
