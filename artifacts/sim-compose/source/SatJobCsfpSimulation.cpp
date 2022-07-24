@@ -1,7 +1,5 @@
 #include <Logger.hpp>
 #include <iostream>
-#include <Job.hpp>
-#include <EHSatellite.hpp>
 #include <SimpleSolarCell.hpp>
 #include <JetsonTX2.hpp>
 #include <ChameleonImager.hpp>

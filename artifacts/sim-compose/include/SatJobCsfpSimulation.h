@@ -5,6 +5,8 @@
 #ifndef CSFPBASE_SATJOBCSFPSIMULATION_H
 #define CSFPBASE_SATJOBCSFPSIMULATION_H
 
+#include <Job.hpp>
+#include <EHSatellite.hpp>
 #include <Logger.hpp>
 #include <vector>
 #include "SatJobSimulation.h"
@@ -24,8 +26,8 @@ namespace satsim {
 
     private:
         Logger logger;
-        std::vector<satsim::Job *> gtfs;
-        std::vector<satsim::EHSatellite *> ehsatellites;
+        std::vector<Job *> gtfs;
+        std::vector<EHSatellite *> ehsatellites;
     };
 }
 
