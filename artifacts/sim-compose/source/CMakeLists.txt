@@ -17,7 +17,7 @@ cmake_minimum_required(VERSION 3.0)
 project(CloseSpaced)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 link_libraries(stdc++fs)
-add_subdirectory(satsim/source)
+add_subdirectory(satsim)
 
 include_directories(
         "../../../software/comsim/channel/include"

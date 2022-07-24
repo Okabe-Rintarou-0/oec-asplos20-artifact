@@ -5,13 +5,14 @@
 #ifndef CSFPBASE_SATJOBCSFPSIMULATION_H
 #define CSFPBASE_SATJOBCSFPSIMULATION_H
 
-#include <Job.hpp>
-#include <EHSatellite.hpp>
-#include <Logger.hpp>
 #include <vector>
 #include "SatJobSimulation.h"
 
 namespace satsim {
+    class Logger;
+    class Job;
+    class EHSatellite;
+
     class SatJobCsfpSimulation : public SatJobSimulation {
     public:
         ~SatJobCsfpSimulation();
@@ -25,7 +26,7 @@ namespace satsim {
         bool running() override;
 
     private:
-        Logger logger;
+        std::unique_ptr<Logger> logger;
         std::vector<Job *> gtfs;
         std::vector<EHSatellite *> ehsatellites;
     };

@@ -1,11 +1,17 @@
-#include <Logger.hpp>
 #include <iostream>
 #include <SimpleSolarCell.hpp>
 #include <JetsonTX2.hpp>
 #include <ChameleonImager.hpp>
 #include <MAIAdacs.hpp>
+#include <Logger.hpp>
 #include <cmath>
 #include <iomanip>
+#include <sstream>
+#include <Orbit.hpp>
+#include <Capacitor.hpp>
+#include <EHSatellite.hpp>
+#include <EHSystem.hpp>
+#include <memory>
 #include "SatJobCsfpSimulation.h"
 
 // tasksPerJob = 3072
@@ -15,7 +21,7 @@ satsim::SatJobCsfpSimulation::SatJobCsfpSimulation(size_t pipelineDepth,
                                                    size_t tasksPerJob,
                                                    size_t gtfCount,
                                                    double orbitPeriodSec) :
-        logger("s"),
+        logger(new Logger("s")),
         SatJobSimulation(pipelineDepth, tasksPerJob, gtfCount, orbitPeriodSec) {}
 
 void satsim::SatJobCsfpSimulation::run() {
@@ -42,7 +48,7 @@ void satsim::SatJobCsfpSimulation::run() {
         double sscCmp_A = 1.0034;
         double nodeVoltage_V = sscVmp_V; // Start at maximum node voltage
         satsim::EnergyHarvester *simpleSolarCell =
-                new satsim::SimpleSolarCell(sscVmp_V, sscCmp_A, nodeVoltage_V, &logger);
+                new satsim::SimpleSolarCell(sscVmp_V, sscCmp_A, nodeVoltage_V, logger.get());
         simpleSolarCell->setWorkerId(i);
         // Energy storage
         // AVX SuperCapacitor SCMR22L105M; five in parallel
@@ -51,14 +57,14 @@ void satsim::SatJobCsfpSimulation::run() {
         double capacity_F = 5.0;
         double esr_Ohm = 0.168;
         double charge_C = (nodeVoltage_V - sscCmp_A * esr_Ohm) * capacity_F; //Q = CU
-        satsim::Capacitor capacitor(capacity_F, esr_Ohm, charge_C, sscCmp_A, &logger);
+        satsim::Capacitor capacitor(capacity_F, esr_Ohm, charge_C, sscCmp_A, logger.get());
         // Minimal energy harvesting system
-        satsim::EHSystem ehsystem(*simpleSolarCell, capacitor, &logger);
+        satsim::EHSystem ehsystem(*simpleSolarCell, capacitor, logger.get());
         // Clean up energy harvester
         delete simpleSolarCell;
         // Energy consumer: Jetson TX2
         satsim::JetsonTX2 jetsonTX2(
-                nodeVoltage_V, satsim::JetsonTX2::PowerState::IDLE, &logger
+                nodeVoltage_V, satsim::JetsonTX2::PowerState::IDLE, logger.get()
         );
         jetsonTX2.setWorkerId(i);
         jetsonTX2.logEvent(
@@ -67,7 +73,7 @@ void satsim::SatJobCsfpSimulation::run() {
         ehsystem.addEnergyConsumer(jetsonTX2);
         // Energy consumer: Chameleon imager
         satsim::ChameleonImager chameleonImager(
-                nodeVoltage_V, satsim::ChameleonImager::PowerState::IDLE, &logger
+                nodeVoltage_V, satsim::ChameleonImager::PowerState::IDLE, logger.get()
         );
         chameleonImager.setWorkerId(i);
         //chameleonImager.logEvent(
@@ -76,11 +82,11 @@ void satsim::SatJobCsfpSimulation::run() {
         ehsystem.addEnergyConsumer(chameleonImager);
         // Energy consumer: MAI ADACS
         satsim::MAIAdacs maiadacs(
-                nodeVoltage_V, satsim::MAIAdacs::PowerState::NADIR, &logger
+                nodeVoltage_V, satsim::MAIAdacs::PowerState::NADIR, logger.get()
         );
         ehsystem.addEnergyConsumer(maiadacs);
         // Push back new energy harvesting satellite
-        this->ehsatellites.push_back(new satsim::EHSatellite(orbit, ehsystem, &logger));
+        this->ehsatellites.push_back(new satsim::EHSatellite(orbit, ehsystem, logger.get()));
     }
 
     this->simulating = true;
@@ -168,7 +174,7 @@ void satsim::SatJobCsfpSimulation::update(double simSecs) {
         std::ostringstream oss;
         oss << "../logs/" << std::setfill('0') << std::setw(3)
             << this->pipelineDepth;
-        logger.exportCsvs(oss.str());
+        logger->exportCsvs(oss.str());
     }
 }
 
@@ -180,12 +186,12 @@ satsim::SatJobCsfpSimulation::~SatJobCsfpSimulation() {
     // RAII style
 
     // Clean up each satellite in the pipeline
-    for (auto & ehsatellite : this->ehsatellites) {
+    for (auto &ehsatellite : this->ehsatellites) {
         delete ehsatellite;
     }
 
     // Clean up jobs
-    for (auto & gtf : gtfs) {
+    for (auto &gtf : gtfs) {
         delete gtf;
     }
 }
