@@ -21,7 +21,7 @@
 #include <Sensor.hpp>        // Sensor
 #include <Receive.hpp>       // Receive
 #include <utilities.hpp>     // utilities
-//#include "SatJobCsfpSimulation.h"
+#include "SatJobCsfpSimulation.h"
 
 
 // tasksPerJob = 3072
@@ -335,14 +335,14 @@ int main(int argc, char **argv) {
     size_t tasksPerJob = 3072;
     size_t gtfCount = 1642;
     double orbitPeriodSec = 5580.0;
-//    satsim::SatJobCsfpSimulation simulation(
-//            pipelineDepth,
-//            tasksPerJob,
-//            gtfCount,
-//            orbitPeriodSec
-//    );
-//
-//    simulation.run();
+    satsim::SatJobCsfpSimulation simulation(
+            pipelineDepth,
+            tasksPerJob,
+            gtfCount,
+            orbitPeriodSec
+    );
+
+    simulation.run();
 
     while (centisecondCount < 1080000) { // three hours, i.e. approximately 2 revs
         // Prepare sim-compose data
@@ -591,7 +591,7 @@ int main(int argc, char **argv) {
             groundStation.update(10000000); // 1 centisecond
         }
 
-//        simulation.update(1e-2);
+        simulation.update(1e-2);
         centisecondCount += 1;
     }
     // Write out logs

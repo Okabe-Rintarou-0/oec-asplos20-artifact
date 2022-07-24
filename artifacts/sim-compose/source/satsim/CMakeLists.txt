@@ -14,7 +14,6 @@
 # the License.
 
 cmake_minimum_required(VERSION 3.0)
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 add_library(libsatjobsim STATIC
         SatJobSimulation.cpp
@@ -33,6 +32,8 @@ add_library(libsatjobsim STATIC
         ../../../../software/satsim/orbit/source/Orbit.cpp
         ../../../../software/satsim/satellite/source/Satellite.cpp
         ../../../../software/satsim/eh-satellite/source/EHSatellite.cpp)
+
+target_include_directories(libsatjobsim PUBLIC include)
 
 target_include_directories(libsatjobsim PUBLIC
         "../../../../software/satsim/ilog/include"
@@ -54,4 +55,3 @@ target_include_directories(libsatjobsim PUBLIC
         "../../../../software/satsim/eh-satellite/include")
 
 target_compile_features(libsatjobsim PRIVATE cxx_std_11)
-target_include_directories(libsatjobsim PUBLIC include)
