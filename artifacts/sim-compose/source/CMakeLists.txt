@@ -14,42 +14,39 @@
 # the License.
 
 cmake_minimum_required(VERSION 3.0)
-project(CSFPBase)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-include_directories("../include"
-        "../../../software/satsim/ilog/include"
-        "../../../software/satsim/isim/include"
-        "../../../software/satsim/iwork/include"
-        "../../../software/satsim/logger/include"
-        "../../../software/satsim/job/include"
-        "../../../software/satsim/energy-harvester/include"
-        "../../../software/satsim/simple-solar-cell/include"
-        "../../../software/satsim/energy-storage/include"
-        "../../../software/satsim/capacitor/include"
-        "../../../software/satsim/energy-consumer/include"
-        "../../../software/satsim/jetson-tx2/include"
-        "../../../software/satsim/mai-adacs/include"
-        "../../../software/satsim/chameleon-imager/include"
-        "../../../software/satsim/eh-system/include"
-        "../../../software/satsim/orbit/include"
-        "../../../software/satsim/satellite/include"
-        "../../../software/satsim/eh-satellite/include")
+project(CloseSpaced)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+link_libraries(stdc++fs)
+add_subdirectory(satsim/source)
 
-add_executable(sim-compose
-        sim-compose.cpp
-        SatJobSimulation.cpp
-        SatJobCsfpSimulation.cpp
-        ../../../software/satsim/logger/source/Logger.cpp
-        ../../../software/satsim/job/source/Job.cpp
-        ../../../software/satsim/energy-harvester/source/EnergyHarvester.cpp
-        ../../../software/satsim/simple-solar-cell/source/SimpleSolarCell.cpp
-        ../../../software/satsim/energy-storage/source/EnergyStorage.cpp
-        ../../../software/satsim/capacitor/source/Capacitor.cpp
-        ../../../software/satsim/energy-consumer/source/EnergyConsumer.cpp
-        ../../../software/satsim/jetson-tx2/source/JetsonTX2.cpp
-        ../../../software/satsim/mai-adacs/source/MAIAdacs.cpp
-        ../../../software/satsim/chameleon-imager/source/ChameleonImager.cpp
-        ../../../software/satsim/eh-system/source/EHSystem.cpp
-        ../../../software/satsim/orbit/source/Orbit.cpp
-        ../../../software/satsim/satellite/source/Satellite.cpp
-        ../../../software/satsim/eh-satellite/source/EHSatellite.cpp)
+include_directories(
+        "../../../software/comsim/channel/include"
+        "../../../software/comsim/channel-type/include"
+        "../../../software/comsim/constants/include"
+        "../../../software/comsim/date-time/include"
+        "../../../software/comsim/edge/include"
+        "../../../software/comsim/ground-station/include"
+        "../../../software/comsim/isim/include"
+        "../../../software/comsim/log/include"
+        "../../../software/comsim/log-level/include"
+        "../../../software/comsim/receive/include"
+        "../../../software/comsim/satellite/include"
+        "../../../software/comsim/sensor/include"
+        "../../../software/comsim/transmit/include"
+        "../../../software/comsim/utilities/include"
+        "../../../software/comsim/vertex/include")
+
+add_executable(sim-compose sim-compose.cpp
+        ../../../software/comsim/channel/source/Channel.cpp
+        ../../../software/comsim/date-time/source/DateTime.cpp
+        ../../../software/comsim/edge/source/Edge.cpp
+        ../../../software/comsim/ground-station/source/GroundStation.cpp
+        ../../../software/comsim/log/source/Log.cpp
+        ../../../software/comsim/receive/source/Receive.cpp
+        ../../../software/comsim/satellite/source/Satellite.cpp
+        ../../../software/comsim/sensor/source/Sensor.cpp
+        ../../../software/comsim/transmit/source/Transmit.cpp
+        ../../../software/comsim/utilities/source/utilities.cpp
+        ../../../software/comsim/vertex/source/Vertex.cpp)
+
+target_link_libraries(sim-compose libsatjobsim)

@@ -68,24 +68,55 @@ if [ ! -d "../logs/384" ]
 then
   mkdir "../logs/384"
 fi
+
+baseline=$( ps -u $(whoami) | sed 1d | wc -l )
+./prep_cs_scenarios.sh
 cd ../build/
 CC=$HOME/sw/gcc-8.3.0-install/bin/gcc CXX=$HOME/sw/gcc-8.3.0-install/bin/g++ \
  LD_LIBRARY_PATH=$HOME/sw/gcc-8.3.0-install/lib64/ cmake ../source/
 make
-./sim-compose 1 &
-#./sim-compose 2 &
-#./sim-compose 3 &
-#./sim-compose 4 &
-#./sim-compose 6 &
-#./sim-compose 8 &
-#./sim-compose 12 &
-#./sim-compose 16 &
-#./sim-compose 24 &
-#./sim-compose 32 &
-#./sim-compose 48 &
-#./sim-compose 64 &
-#./sim-compose 96 &
-#./sim-compose 128 &
-#./sim-compose 192 &
-#./sim-compose 256 &
-#./sim-compose 384 &
+for orbit in planet spacex spire
+do
+  for gnd_count in 010 020 030 040 050 060 070 080 090 100 110 120
+  do
+    # equatorial ground stations
+    gnd_config=eq
+    ./sim-compose ../logs/$orbit-$gnd_config-$gnd_count/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/dt/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/sat/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/sensor/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/gnd/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/tx-sat/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/tx-gnd/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/rx-sat/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/rx-gnd/ &
+    # north/south polar ground stations
+    gnd_config=ns
+    ./sim-compose ../logs/$orbit-$gnd_config-$gnd_count/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/dt/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/sat/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/sensor/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/gnd/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/tx-sat/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/tx-gnd/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/rx-sat/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/rx-gnd/ &
+    # university ground stations
+    gnd_config=un
+    ./sim-compose ../logs/$orbit-$gnd_config-$gnd_count/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/dt/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/sat/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/sensor/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/gnd/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/tx-sat/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/tx-gnd/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/rx-sat/ \
+                   ../data/$orbit-$gnd_config-$gnd_count/rx-gnd/ &
+    # if necessary, wait for cores to free
+    while (( $(( $( ps -u $(whoami) | sed 1d | wc -l ) - $baseline )) > $(nproc) ))
+    do
+      sleep 1000
+    done
+  done
+done
+

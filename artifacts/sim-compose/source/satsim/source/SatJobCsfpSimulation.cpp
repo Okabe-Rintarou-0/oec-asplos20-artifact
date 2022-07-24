@@ -5,9 +5,8 @@
 #include <ChameleonImager.hpp>
 #include <MAIAdacs.hpp>
 #include <cmath>
-#include <sstream>
 #include <iomanip>
-#include "../include/SatJobCsfpSimulation.h"
+#include "SatJobCsfpSimulation.h"
 
 // tasksPerJob = 3072
 // gtfCount = 1642

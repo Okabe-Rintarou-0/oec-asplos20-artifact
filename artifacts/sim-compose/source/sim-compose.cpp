@@ -1,4 +1,26 @@
 #include <iostream>
+// comsim
+#include <algorithm>         // sort
+#include <cmath>             // round
+#include <cstdlib>           // exit, EXIT_SUCCESS
+#include <filesystem>        // path
+#include <fstream>           // ifstream
+#include <iostream>          // cout
+#include <map>               // map
+#include <ostream>           // endl
+#include <vector>            // vector
+
+#include <constants.hpp>     // constants
+#include <Channel.hpp>       // Channel
+#include <DateTime.hpp>      // DateTime
+#include <GroundStation.hpp> // GroundStation
+#include <Log.hpp>           // Log
+#include <LogLevel.hpp>      // LogLevel
+#include <Transmit.hpp>      // Transmit
+#include <Satellite.hpp>     // Satellite
+#include <Sensor.hpp>        // Sensor
+#include <Receive.hpp>       // Receive
+#include <utilities.hpp>     // utilities
 #include "SatJobCsfpSimulation.h"
 
 
@@ -6,23 +28,313 @@
 // gtfCount = 1642
 // orbitPeriodSec = 5580.0
 int main(int argc, char **argv) {
-    size_t pipelineDepth = 1;
+    // Set up variables
+    std::filesystem::path logDirectory;            // path to log destination
+    std::filesystem::path dateTimeFile;            // file specifying date & time
+    std::filesystem::path satelliteFile;           // satellite TLE file
+    std::filesystem::path constellationFile;       // constellation configuration
+    std::filesystem::path sensorFile;              // file specifying sensor
+    std::vector<std::filesystem::path> gndFiles;   // list of (lat,lon,h) files
+    std::filesystem::path txSatFile;               // satellite TX configuration
+    std::vector<std::filesystem::path> txGndFiles; // list of ground station TX
+    std::filesystem::path rxSatFile;               // satellite RX configuration
+    std::vector<std::filesystem::path> rxGndFiles; // list of ground station RX
+    // Parse command line argument(s)
+    if (argc != 10) {
+        std::cout << "Usage: " << argv[0]
+                  << " /path/to/logs/dst/"
+                  << " /path/to/dt/"
+                  << " /path/to/sat/"
+                  << " /path/to/sensor/"
+                  << " /path/to/gnd/"
+                  << " /path/to/tx-sat/"
+                  << " /path/to/tx-gnd/"
+                  << " /path/to/rx-sat/"
+                  << " /path/to/rx-gnd/"
+                  << std::endl;
+        std::exit(EXIT_SUCCESS);
+    } else {
+        // Get date-time file path
+        logDirectory = std::filesystem::path(argv[1]);
+        // Get date-time file path
+        std::filesystem::path dtdir(argv[2]);
+        std::filesystem::directory_iterator it(dtdir);
+        while (it != std::filesystem::end(it)) {
+            std::string pathStr = it->path().string();
+            if (pathStr.substr(pathStr.size() - 4, 4) == ".dat") {
+                dateTimeFile = it->path();
+            }
+            it++;
+        }
+        // Get satellite file path, constellation file path
+        std::filesystem::path tledir(argv[3]);
+        it = std::filesystem::directory_iterator(tledir);
+        while (it != std::filesystem::end(it)) {
+            std::string pathStr = it->path().string();
+            if (pathStr.substr(pathStr.size() - 4, 4) == ".tle") {
+                satelliteFile = it->path();
+            } else if (pathStr.substr(pathStr.size() - 4, 4) == ".dat") {
+                constellationFile = it->path();
+            }
+            it++;
+        }
+        // Get sensor file path
+        std::filesystem::path sensordir(argv[4]);
+        it = std::filesystem::directory_iterator(sensordir);
+        while (it != std::filesystem::end(it)) {
+            std::string pathStr = it->path().string();
+            if (pathStr.substr(pathStr.size() - 4, 4) == ".dat") {
+                sensorFile = it->path();
+            }
+            it++;
+        }
+        // Get ground station file paths
+        // 传入的是地面站的文件所处的目录，这个目录是在 prep_cs_scenarios.sh 脚本中通过
+        // python3 populate_gnd_ring.py 0.0 0.0 $((10#$gnd_count)) 0 ../data/$orbit-$gnd_config-$gnd_count/gnd/
+        // 生成的。
+        std::filesystem::path llhdir(argv[5]);
+        it = std::filesystem::directory_iterator(llhdir);
+        while (it != std::filesystem::end(it)) {
+            std::string pathStr = it->path().string();
+            if (pathStr.substr(pathStr.size() - 4, 4) == ".dat") {
+                gndFiles.push_back(it->path());
+            }
+            it++;
+        }
+        // Get satellite TX file path
+        std::filesystem::path sattxdir(argv[6]);
+        it = std::filesystem::directory_iterator(sattxdir);
+        while (it != std::filesystem::end(it)) {
+            std::string pathStr = it->path().string();
+            if (pathStr.substr(pathStr.size() - 4, 4) == ".dat") {
+                txSatFile = it->path();
+            }
+            it++;
+        }
+        // Get ground station TX file paths
+        std::filesystem::path gndtxdir(argv[7]);
+        it = std::filesystem::directory_iterator(gndtxdir);
+        while (it != std::filesystem::end(it)) {
+            std::string pathStr = it->path().string();
+            if (pathStr.substr(pathStr.size() - 4, 4) == ".dat") {
+                txGndFiles.push_back(it->path());
+            }
+            it++;
+        }
+        // Get satellite RX file path
+        std::filesystem::path satrxdir(argv[8]);
+        it = std::filesystem::directory_iterator(satrxdir);
+        while (it != std::filesystem::end(it)) {
+            std::string pathStr = it->path().string();
+            if (pathStr.substr(pathStr.size() - 4, 4) == ".dat") {
+                rxSatFile = it->path();
+            }
+            it++;
+        }
+        // Get ground station RX file paths
+        std::filesystem::path gndrxdir(argv[9]);
+        it = std::filesystem::directory_iterator(gndrxdir);
+        while (it != std::filesystem::end(it)) {
+            std::string pathStr = it->path().string();
+            if (pathStr.substr(pathStr.size() - 4, 4) == ".dat") {
+                rxGndFiles.push_back(it->path());
+            }
+            it++;
+        }
+    }
+    // Set up log
+    std::vector<comsim::LogLevel> levels = {comsim::LogLevel::INFO};
+    comsim::Log log(levels, logDirectory.string());
+    // Set up date and time
+    std::ifstream dateTimeHandle(dateTimeFile.string());
+    std::string line;
+    std::getline(dateTimeHandle, line); // Read header
+    std::getline(dateTimeHandle, line); // Read values
+    dateTimeHandle.close();
+    // 对应于  /dt/date-time.dat 中的数据
+    int16_t year = static_cast<int16_t>(std::stoi(line.substr(0, 4)));
+    uint8_t month = static_cast<uint8_t>(std::stoi(line.substr(5, 2)));
+    uint8_t day = static_cast<uint8_t>(std::stoi(line.substr(8, 2)));
+    uint8_t hour = static_cast<uint8_t>(std::stoi(line.substr(11, 2)));
+    uint8_t minute = static_cast<uint8_t>(std::stoi(line.substr(14, 2)));
+    uint8_t second = static_cast<uint8_t>(std::stoi(line.substr(17, 2)));
+    uint32_t nanosecond = static_cast<uint32_t>(std::stoi(line.substr(20, 9)));
+    comsim::DateTime dateTime(year, month, day, hour, minute, second, nanosecond);
+    // Set up constellation configuration parameters
+    // 对应于 sim-common/sat/cs-planet.dat 中的数据
+    std::ifstream constellationHandle(constellationFile.string());
+    line = "";
+    std::getline(constellationHandle, line); // Read header
+    std::getline(constellationHandle, line); // Read values
+    constellationHandle.close();
+    // count 对应于卫星的数量。剩下的 timeStep 为卫星之间的距离对应的时间间隔
+    uint16_t count = static_cast<uint16_t>(std::stoi(line.substr(0, 5)));
+    uint8_t hourStep = static_cast<uint8_t>(std::stoi(line.substr(6, 2)));
+    uint8_t minuteStep = static_cast<uint8_t>(std::stoi(line.substr(9, 2)));
+    uint8_t secondStep = static_cast<uint8_t>(std::stoi(line.substr(12, 2)));
+    uint32_t nanosecondStep = static_cast<uint32_t>(std::stoi(line.substr(15, 9)));
+    // Set up satellites
+    comsim::DateTime localTime = dateTime;
+    std::vector<comsim::Satellite> satellites;
+    for (size_t i = count; i != 0; i--) {
+        satellites.emplace_back(satelliteFile.string(), &dateTime, &log);
+        uint32_t id = satellites.back().getCatalogNumber();
+        satellites.back().setCatalogNumber(1000 * id + (i - 1));
+        satellites.back().setLocalTime(localTime);
+        localTime.update(hourStep, minuteStep, secondStep, nanosecondStep);
+    }
+    // 按照 catalogNumber 升序排序
+    std::sort(
+            satellites.begin(), satellites.end(),
+            [](const comsim::Satellite &s1, const comsim::Satellite &s2) {
+                return s1.getCatalogNumber() < s2.getCatalogNumber();
+            }
+    );
+    // Set up satellite sensors
+    // 对应于 sim-common/sensor/sensor.dat 其中的 focal length 为焦距
+    std::ifstream sensorHandle(sensorFile.string());
+    line = "";
+    std::getline(sensorHandle, line); // Read header
+    std::getline(sensorHandle, line); // Read value(s)
+    sensorHandle.close();
+    uint64_t bitsPerSense = static_cast<uint64_t>(std::stoll(line.substr(0, 10)));
+    uint32_t pixelCount = static_cast<uint32_t>(std::stoi(line.substr(11, 5)));
+    double pixelSizeM = static_cast<double>(std::stod(line.substr(17, 11)));
+    double focalLengthM = static_cast<double>(std::stod(line.substr(29, 10)));
+    const double threshCoeff =
+            (static_cast<double>(pixelCount) * pixelSizeM / focalLengthM);
+    std::map<uint32_t, comsim::Sensor *> satId2Sensor;
+    // 为每个卫星创建其对应的传感器，并且设定传感器所需要的参数。
+    for (size_t i = 0; i < satellites.size(); i++) {
+        uint32_t id = satellites.at(i).getCatalogNumber();
+        satId2Sensor[id] = new comsim::Sensor(&dateTime, id, &log);
+        satId2Sensor[id]->setBitsPerSense(static_cast<uint64_t>(std::round(
+                static_cast<double>(bitsPerSense) / static_cast<double>(satellites.size())
+        )));
+        satId2Sensor[id]->setPrevSensePosn(satellites.at(i).getECIPosn());
+        satId2Sensor[id]->setPrevSenseDateTime(dateTime);
+        satId2Sensor[id]->setECIPosn(satellites.at(i).getECIPosn());
+    }
+    // Set up ground stations
+    std::vector<comsim::GroundStation> groundStations;
+    for (auto &gndFile : gndFiles) {
+        std::ifstream gndHandle(gndFile.string());
+        line = "";
+        std::getline(gndHandle, line); // Read header
+        std::getline(gndHandle, line); // Read values
+        gndHandle.close();
+        uint32_t id = static_cast<uint32_t>(std::stoi(line.substr(0, 10)));
+        double lat = std::stod(line.substr(11, 13));
+        double lon = std::stod(line.substr(25, 14));
+        double hae = std::stod(line.substr(40, 13));
+        groundStations.emplace_back(lat, lon, hae, &dateTime, id, &log);
+    }
+    std::sort(
+            groundStations.begin(), groundStations.end(),
+            [](const comsim::GroundStation &g1, const comsim::GroundStation &g2) {
+                return g1.getID() < g2.getID();
+            }
+    );
+    // Set up satellite TX
+    std::map<uint32_t, comsim::Transmit *> satId2Tx;
+    for (auto &satellite : satellites) {
+        std::ifstream satTxHandle(txSatFile.string());
+        line = "";
+        std::getline(satTxHandle, line); // Read header
+        std::getline(satTxHandle, line); // Read values
+        satTxHandle.close();
+        uint32_t id = satellite.getCatalogNumber();
+        std::array<double, 3> posn = satellite.getECIPosn();
+        double powerW = std::stod(line.substr(11, 16));
+        double lineLossDB = std::stod(line.substr(28, 13));
+        double gainDB = std::stod(line.substr(42, 13));
+        double centerFrequencyHz = std::stod(line.substr(56, 22));
+        double bandwidthHz = std::stod(line.substr(79, 23));
+        satId2Tx[id] =
+                new comsim::Transmit(posn, powerW, lineLossDB, gainDB, &dateTime, id, &log);
+    }
+    // Set up ground station TX
+    std::map<uint32_t, comsim::Transmit *> gndId2Tx;
+    for (auto &txGndFile : txGndFiles) {
+        std::ifstream gndTxHandle(txGndFile.string());
+        line = "";
+        std::getline(gndTxHandle, line); // Read header
+        std::getline(gndTxHandle, line); // Read values
+        gndTxHandle.close();
+        uint32_t id = static_cast<uint32_t>(std::stoi(line.substr(0, 10)));
+        std::array<double, 3> posn = {0.0, 0.0, 0.0};
+        for (auto &groundStation : groundStations) {
+            if (groundStation.getID() == id) {
+                posn = groundStation.getECIPosn();
+            }
+        }
+        double powerW = std::stod(line.substr(11, 16));
+        double lineLossDB = std::stod(line.substr(28, 13));
+        double gainDB = std::stod(line.substr(42, 13));
+        double centerFrequencyHz = std::stod(line.substr(56, 22));
+        double bandwidthHz = std::stod(line.substr(79, 23));
+        gndId2Tx[id] =
+                new comsim::Transmit(posn, powerW, lineLossDB, gainDB, &dateTime, id, &log);
+    }
+    // Set up satellite RX
+    std::map<uint32_t, comsim::Receive *> satId2Rx;
+    for (auto &satellite : satellites) {
+        std::ifstream satRxHandle(rxSatFile.string());
+        line = "";
+        std::getline(satRxHandle, line); // Read header
+        std::getline(satRxHandle, line); // Read values
+        satRxHandle.close();
+        uint32_t id = satellite.getCatalogNumber();
+        std::array<double, 3> posn = satellite.getECIPosn();
+        double gainDB = std::stod(line.substr(11, 13));
+        double centerFrequencyHz = std::stod(line.substr(25, 22));
+        double bandwidthHz = std::stod(line.substr(48, 23));
+        satId2Rx[id] = new comsim::Receive(posn, gainDB, &dateTime, id, &log);
+    }
+    // Set up ground station RX
+    std::map<uint32_t, comsim::Receive *> gndId2Rx;
+    for (auto &rxGndFile : rxGndFiles) {
+        std::ifstream gndRxHandle(rxGndFile.string());
+        line = "";
+        std::getline(gndRxHandle, line); // Read header
+        std::getline(gndRxHandle, line); // Read values
+        gndRxHandle.close();
+        uint32_t id = static_cast<uint32_t>(std::stoi(line.substr(0, 10)));
+        std::array<double, 3> posn = {0.0, 0.0, 0.0};
+        for (auto &groundStation : groundStations) {
+            if (groundStation.getID() == id) {
+                posn = groundStation.getECIPosn();
+            }
+        }
+        double gainDB = std::stod(line.substr(11, 13));
+        double centerFrequencyHz = std::stod(line.substr(25, 22));
+        double bandwidthHz = std::stod(line.substr(48, 23));
+        gndId2Rx[id] = new comsim::Receive(posn, gainDB, &dateTime, id, &log);
+    }
+    // Simulation data
+    std::map<uint32_t, bool> satId2Occupied;
+    std::map<uint32_t, double> satId2Threshold;
+    for (auto &satellite : satellites) {
+        satId2Occupied[satellite.getCatalogNumber()] = false;
+        satId2Threshold[satellite.getCatalogNumber()] =
+                threshCoeff * comsim::util::calcAltitudeKm(satellite.getECIPosn());
+    }
+    std::map<uint32_t, std::vector<comsim::Satellite *>> gndId2VisSats;
+    std::map<uint32_t, comsim::Satellite *> gndId2CurrSat;
+    for (auto &groundStation : groundStations) {
+        gndId2VisSats[groundStation.getID()] =
+                std::vector<comsim::Satellite *>();
+        gndId2CurrSat[groundStation.getID()] = nullptr;
+    }
+    std::vector<comsim::Channel> downlinks = std::vector<comsim::Channel>();
+    std::vector<comsim::Channel> uplinks = std::vector<comsim::Channel>();
+    // Simulation loop
+    size_t centisecondCount = 0;
+
+    size_t pipelineDepth = count;
     size_t tasksPerJob = 3072;
     size_t gtfCount = 1642;
     double orbitPeriodSec = 5580.0;
-    // Parse command line argument(s)
-    if (argc != 2) {
-        std::cout << "Usage: ./" << argv[0] << " int"
-                  << std::endl
-                  << "  int: pipeline depth (minimum 1)"
-                  << std::endl;
-        std::exit(EXIT_FAILURE);
-    } else {
-        pipelineDepth = std::max(1, std::atoi(argv[1]));
-    }
-
-    std::cout << "pipeline depth = " << pipelineDepth << std::endl;
-
     satsim::SatJobCsfpSimulation simulation(
             pipelineDepth,
             tasksPerJob,
@@ -32,7 +344,273 @@ int main(int argc, char **argv) {
 
     simulation.run();
 
-    while(simulation.running()) {
-        simulation.update(2e-5);
+    while (centisecondCount < 1080000) { // three hours, i.e. approximately 2 revs
+        // Prepare sim-compose data
+        //// Clear active channels
+        downlinks.clear();
+        uplinks.clear();
+        //// Get the current time
+        const double JD = comsim::util::calcJulianDayFromYMD(
+                dateTime.getYear(), dateTime.getMonth(), dateTime.getDay()
+        );
+        const uint32_t SEC =
+                dateTime.getSecond() +
+                static_cast<uint32_t>(dateTime.getMinute()) *
+                static_cast<uint32_t>(comsim::cnst::SEC_PER_MIN) +
+                static_cast<uint32_t>(dateTime.getHour()) *
+                static_cast<uint32_t>(comsim::cnst::MIN_PER_HOUR) *
+                static_cast<uint32_t>(comsim::cnst::SEC_PER_MIN);
+        const uint32_t NS = dateTime.getNanosecond();
+        //// Determinte visible satellites for each ground station
+        //// Clear satellite occupied flag if no longer visible
+        for (auto &groundStation : groundStations) {
+            const double LAT = groundStation.getLatitude();
+            const double LON = groundStation.getLongitude();
+            const double HAE = groundStation.getHAE();
+            const uint32_t GND_ID = groundStation.getID();
+            gndId2VisSats[GND_ID].clear();
+            bool currSatInView = false;
+            for (auto &satellite : satellites) {
+                const std::array<double, 3> satEciPosn = satellite.getECIPosn();
+                if (
+                    // 这边在计算仰角，如果大于10度就认为该卫星对于当前的地面站而言是可见的。
+                        comsim::util::calcElevationDeg(JD, SEC, NS, LAT, LON, HAE, satEciPosn) >= 10.0
+                        ) {
+                    gndId2VisSats[GND_ID].push_back(&satellite);
+                    if (
+                            gndId2CurrSat[GND_ID] != nullptr &&
+                            gndId2CurrSat[GND_ID] == &satellite
+                            ) {
+                        currSatInView = true;
+                    }
+                }
+            }
+            // 如果当前没有卫星在当前地面站的视野范围，那么就取消卫星的占用状态，
+            // 同时清除地面站对应的当前卫星为nullptr
+            if (!currSatInView && gndId2CurrSat[GND_ID] != nullptr) {
+                satId2Occupied[gndId2CurrSat[GND_ID]->getCatalogNumber()] = false;
+                gndId2CurrSat[GND_ID] = nullptr;
+            }
+        }
+        // Simulation logic
+        //// For each ground station without a link, connect with the highest sat
+        for (auto &groundStation : groundStations) {
+            const uint32_t GND_ID = groundStation.getID();
+            // If no current link, choose the satellite with highest visible elevation
+            // and data buffered onboard
+            if (gndId2CurrSat[GND_ID] == nullptr) {
+                const double LAT = groundStation.getLatitude();
+                const double LON = groundStation.getLongitude();
+                const double HAE = groundStation.getHAE();
+                comsim::Satellite *bestSat = nullptr;
+                uint64_t bestSatBuffer = 0;
+                for (auto &satellite : satellites) {
+                    const uint32_t SAT_ID = satellite.getCatalogNumber();
+                    const std::array<double, 3> satEciPosn = satellite.getECIPosn();
+                    const double EL =
+                            comsim::util::calcElevationDeg(JD, SEC, NS, LAT, LON, HAE, satEciPosn);
+                    const uint64_t BUF = satId2Sensor[SAT_ID]->getBitsBuffered();
+                    if (!satId2Occupied[SAT_ID] && EL >= 10.0 && BUF > bestSatBuffer) {
+                        bestSat = &satellite;
+                        bestSatBuffer = BUF;
+                    }
+                }
+                if (bestSat != nullptr) {
+                    satId2Occupied[bestSat->getCatalogNumber()] = true;
+                    gndId2CurrSat[GND_ID] = bestSat;
+                }
+                bestSat = nullptr;
+            }
+            // If there are links now, formally construct them
+            if (gndId2CurrSat[GND_ID] != nullptr) {
+                const uint32_t SAT_ID = gndId2CurrSat[GND_ID]->getCatalogNumber();
+                // Construct downlink
+                downlinks.emplace_back(satId2Tx[SAT_ID], gndId2Rx[GND_ID], 8.15e9, 20.0e6, &dateTime, &log);
+                // Drain data from satellite to ground station based on time step
+                satId2Sensor[SAT_ID]->drainBuffer(static_cast<uint64_t>(// 1 centisecond
+                                                          std::round(
+                                                                  static_cast<double>(downlinks.back().getBitsPerSec()) *
+                                                                  0.01)
+                                                  ));
+                // Construct uplink
+                uplinks.emplace_back(gndId2Tx[GND_ID], satId2Rx[SAT_ID], 436.5e6, 60.0e3, &dateTime, &log);
+            }
+        }
+        //// Sensor data collection logic
+        //// For close-spaced, all satellites capture data every frame
+        //// So use only the "lead" satellite to check if it is time for a new frame
+        const uint32_t LEAD_SAT_ID = satellites.at(0).getCatalogNumber();
+        const std::array<double, 3> prevSensePosn =
+                satId2Sensor[LEAD_SAT_ID]->getPrevSensePosn();
+        const comsim::DateTime prevSenseDateTime =
+                satId2Sensor[LEAD_SAT_ID]->getPrevSenseDateTime();
+        const double PREV_JD = comsim::util::calcJulianDayFromYMD(
+                prevSenseDateTime.getYear(), prevSenseDateTime.getMonth(),
+                prevSenseDateTime.getDay()
+        );
+        const uint32_t PREV_SEC =
+                prevSenseDateTime.getSecond() +
+                static_cast<uint32_t>(prevSenseDateTime.getMinute()) *
+                static_cast<uint32_t>(comsim::cnst::SEC_PER_MIN) +
+                static_cast<uint32_t>(prevSenseDateTime.getHour()) *
+                static_cast<uint32_t>(comsim::cnst::MIN_PER_HOUR) *
+                static_cast<uint32_t>(comsim::cnst::SEC_PER_MIN);
+        const uint32_t PREV_NS = prevSenseDateTime.getNanosecond();
+        const double PREV_LAT = comsim::util::calcSubpointLatitude(prevSensePosn);
+        const double PREV_LON = comsim::util::calcSubpointLongitude(
+                PREV_JD, PREV_SEC, PREV_NS, prevSensePosn
+        );
+        const std::array<double, 3> currPosn = satId2Sensor[LEAD_SAT_ID]->getECIPosn();
+        const comsim::DateTime currDateTime = dateTime;
+        const double CURR_JD = comsim::util::calcJulianDayFromYMD(
+                currDateTime.getYear(), currDateTime.getMonth(), currDateTime.getDay()
+        );
+        const uint32_t CURR_SEC =
+                currDateTime.getSecond() +
+                static_cast<uint32_t>(currDateTime.getMinute()) *
+                static_cast<uint32_t>(comsim::cnst::SEC_PER_MIN) +
+                static_cast<uint32_t>(currDateTime.getHour()) *
+                static_cast<uint32_t>(comsim::cnst::MIN_PER_HOUR) *
+                static_cast<uint32_t>(comsim::cnst::SEC_PER_MIN);
+        const uint32_t CURR_NS = currDateTime.getNanosecond();
+        // subpoint 即投影点
+        const double CURR_LAT = comsim::util::calcSubpointLatitude(currPosn);
+        const double CURR_LON = comsim::util::calcSubpointLongitude(
+                CURR_JD, CURR_SEC, CURR_NS, currPosn
+        );
+        // 计算和上次的间距，如果距离大于阈值，那么就触发 sense event。
+        const double distance = comsim::util::calcGreatCircleArc(
+                CURR_LON, CURR_LAT, PREV_LON, PREV_LAT
+        ) * comsim::cnst::WGS_84_A;
+        if (distance >= satId2Threshold[LEAD_SAT_ID]) {
+            log.evnt(
+                    comsim::LogLevel::INFO, currDateTime.toString(), "trigger-time"
+            );
+            for (auto &satellite : satellites) {
+                satId2Sensor[satellite.getCatalogNumber()]->triggerSense();
+                satId2Threshold[satellite.getCatalogNumber()] = threshCoeff *
+                                                                comsim::util::calcAltitudeKm(
+                                                                        satellite.getECIPosn());
+            }
+        }
+        // Log info once per second
+        if (centisecondCount % 100 == 0) {
+            if (downlinks.empty()) {
+                log.meas(
+                        comsim::LogLevel::INFO,
+                        dateTime.toString(),
+                        std::string("downlink-Mbps"),
+                        std::to_string(0.0)
+                );
+                log.meas(
+                        comsim::LogLevel::INFO,
+                        dateTime.toString(),
+                        std::string("downlink-MB"),
+                        std::to_string(0.0)
+                );
+                log.meas(
+                        comsim::LogLevel::INFO,
+                        dateTime.toString(),
+                        std::string("downlink-tx-rx"),
+                        "None"
+                );
+            } else {
+                for (auto & downlink : downlinks) {
+                    log.meas(
+                            comsim::LogLevel::INFO,
+                            dateTime.toString(),
+                            std::string("downlink-Mbps"),
+                            std::to_string(
+                                    static_cast<double>(downlink.getBitsPerSec()) / 1.0e6
+                            )
+                    );
+                    log.meas(
+                            comsim::LogLevel::INFO,
+                            dateTime.toString(),
+                            std::string("downlink-MB"),
+                            std::to_string(
+                                    (1.0 * static_cast<double>(downlink.getBitsPerSec()) / 8.0) / 1.0e6
+                            )
+                    );
+                    log.meas(
+                            comsim::LogLevel::INFO,
+                            dateTime.toString(),
+                            std::string("downlink-tx-rx"),
+                            std::to_string(downlink.getTransmit()->getID()) + "-" +
+                            std::to_string(downlink.getReceive()->getID())
+                    );
+                }
+            }
+            if (uplinks.empty()) {
+                log.meas(
+                        comsim::LogLevel::INFO,
+                        dateTime.toString(),
+                        std::string("uplink-tx-rx"),
+                        "None"
+                );
+            } else {
+                for (auto & uplink : uplinks) {
+                    log.meas(
+                            comsim::LogLevel::INFO,
+                            dateTime.toString(),
+                            std::string("uplink-tx-rx"),
+                            std::to_string(uplink.getTransmit()->getID()) + "-" +
+                            std::to_string(uplink.getReceive()->getID())
+                    );
+                }
+            }
+            for (auto & satellite : satellites) {
+                const uint32_t SAT_ID = satellite.getCatalogNumber();
+                log.meas(
+                        comsim::LogLevel::INFO,
+                        dateTime.toString(),
+                        std::string("MB-buffered-sat-" + std::to_string(SAT_ID)),
+                        std::to_string(
+                                (static_cast<double>(satId2Sensor[SAT_ID]->getBitsBuffered()) / 8.0) /
+                                1.0e6
+                        )
+                );
+            }
+        }
+        // Update sim-compose to the next second
+        dateTime.update(10000000); // 1 centisecond
+        for (auto & satellite : satellites) {
+            const uint32_t SAT_ID = satellite.getCatalogNumber();
+            // 此处会更新卫星的 localTime（一个用于trick的field，配合前面的hourStep等step使用。因为卫星之间有一定距离，然后这个距离
+            // 可以用 time step 进行衡量，所以在前面有一段代码会更新localTime，并且将localTime分配给新创建的卫星，使得每个卫星的localTime
+            // 都能够间隔一个 time step，所以这是一个小trick）
+            // 同时，在此处也会对 localTime 进行更新，所有的卫星都会更新 localTime。
+            // 更新 localTime 是为了后续计算 ECI 坐标。ECI 坐标是通过 SGP4 模型计算的。该模型需要 tsince 这个参数，也就是近地轨道物体运动的时间。
+            // 不难发现，在使用 util::sgp4 这个函数的时候，都会调用 util::calcTDiffMin 这个函数。该函数会简单地计算时间差，以分为单位
+            // 对于 sgp4 函数而言，计算的是 tsince，也就是 localTime 和 tleEpoch 的时间差。
+            satellite.update(10000000); // 1 centisecond
+            satId2Sensor[SAT_ID]->setECIPosn(satellite.getECIPosn());
+            satId2Sensor[SAT_ID]->update(10000000); // 1 centisecond
+        }
+        for (auto & groundStation : groundStations) {
+            groundStation.update(10000000); // 1 centisecond
+        }
+
+        simulation.update(1e-2);
+        centisecondCount += 1;
     }
+    // Write out logs
+    log.writeAll();
+    // Clean up
+    for (auto & it : satId2Sensor) {
+        delete it.second;
+    }
+    for (auto & it : satId2Tx) {
+        delete it.second;
+    }
+    for (auto & it : gndId2Tx) {
+        delete it.second;
+    }
+    for (auto & it : satId2Rx) {
+        delete it.second;
+    }
+    for (auto & it : gndId2Rx) {
+        delete it.second;
+    }
+    std::exit(EXIT_SUCCESS);
 }

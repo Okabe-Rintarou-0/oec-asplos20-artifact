@@ -2,7 +2,7 @@
 // Created by 92304 on 2022/7/23.
 //
 
-#include "../include/SatJobSimulation.h"
+#include "SatJobSimulation.h"
 
 
 satsim::SatJobSimulation::SatJobSimulation(size_t pipelineDepth,
