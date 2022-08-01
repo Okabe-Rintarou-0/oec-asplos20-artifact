@@ -98,6 +98,7 @@ void satsim::SatJobCsfpSimulation::update(double simSecs) {
     static const double radPerGtf = PI / this->gtfs.size();
     if (!this->simulating) {
         std::cout << "Simulating has ended!" << std::endl;
+        return;
     }
 
     this->simulating = false;
