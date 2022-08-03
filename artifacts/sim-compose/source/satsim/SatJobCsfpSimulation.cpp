@@ -96,11 +96,16 @@ void satsim::SatJobCsfpSimulation::run() {
 void satsim::SatJobCsfpSimulation::update(double simSecs) {
     static const double PI = satsim::Orbit::TAU / 2.0;
     static const double radPerGtf = PI / this->gtfs.size();
-    if (!this->simulating) {
+    static bool firstEnded = false;
+    static double currentSimSecs = 0;
+    if (!this->simulating && !firstEnded) {
         std::cout << "Simulating has ended!" << std::endl;
+        firstEnded = true;
+        std::cout << "Total simulation time: " << currentSimSecs << std::endl;
         return;
     }
 
+    currentSimSecs += simSecs;
     this->simulating = false;
     // Run sim-compose for each satellite
     // 枚举所有的卫星（卫星的数量等于pipeline的深度），下面的jiPtr和ciPtr都是对应于当前卫星的Jetson和相机
