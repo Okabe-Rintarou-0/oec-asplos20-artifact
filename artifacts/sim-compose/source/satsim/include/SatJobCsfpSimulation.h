@@ -15,13 +15,15 @@ namespace satsim {
 
     class SatJobCsfpSimulation : public SatJobSimulation {
     public:
-        ~SatJobCsfpSimulation();
+        ~SatJobCsfpSimulation() override;
 
         SatJobCsfpSimulation(size_t pipelineDepth, size_t tasksPerJob, size_t gtfCount, double orbitPeriodSec);
 
         void run() override;
 
         void update(double simSecs) override;
+
+        void stop() override;
 
         bool running() override;
 

@@ -18,6 +18,8 @@ namespace satsim {
 
         virtual void update(double simSecs) = 0;
 
+        virtual void stop() = 0;
+
         virtual bool running() = 0;
 
     protected:

@@ -594,6 +594,9 @@ int main(int argc, char **argv) {
         simulation.update(1e-2);
         centisecondCount += 1;
     }
+
+    simulation.stop();
+
     // Write out logs
     log.writeAll();
     // Clean up

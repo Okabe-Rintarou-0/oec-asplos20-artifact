@@ -112,75 +112,36 @@ void satsim::SatJobCsfpSimulation::update(double simSecs) {
     for (auto ehsPtr : this->ehsatellites) {
         double ehsPosn = ehsPtr->getOrbit().getPosn();
         // if posn < PI check to see if new jobs are added
-        if (ehsPosn < PI) {
-            this->simulating = true;
-            std::vector<satsim::EnergyConsumer *> ecs = ehsPtr->getEnergyConsumers();
-            auto jtPtr = dynamic_cast<satsim::JetsonTX2 *>(ecs.at(0));
-            auto ciPtr = dynamic_cast<satsim::ChameleonImager *>(ecs.at(1));
-            satsim::Job *jobPtr = gtfs.at(std::floor(ehsPosn / radPerGtf));
-            // Push job onto ChameleonImager if IDLE and readyImages is empty and
-            // the ground track frame has unclaimed tasks
-            if (ciPtr->isIdle() && !ciPtr->hasImage() &&
-                jobPtr->getUnclaimedTaskCount() > 0) {
-                // For CSFP, all tasks are claimed
-                // 分配至多tasksPerJob个任务给imager。
-                jobPtr->claimTasks(ciPtr->getWorkerId(), tasksPerJob);
-                ciPtr->addClaimedJob(jobPtr);
-            }
-            // Transfer job from ChameleonImager to Jetson if
-            // ChameleonImager has completed work and Jetson is low on work
-            if (ciPtr->hasImage() && jtPtr->getClaimedJobCount() == 0) {
-                while (ciPtr->hasImage()) {
-                    // 把chameleonImager中的任务移交给jetson
-                    jtPtr->addClaimedJob(ciPtr->dequeImage());
-                }
-            }
-            // Clean up
-            for (auto &ec : ecs) {
-                ec = nullptr;
-            }
-            ecs.clear();
-            // Update
-            ehsPtr->update(simSecs);
-        } else { // otherwise, continue updating if Jetson is not idle
-            std::vector<satsim::EnergyConsumer *> ecs = ehsPtr->getEnergyConsumers();
-            auto jtPtr = dynamic_cast<satsim::JetsonTX2 *>(ecs.at(0));
-            // 只要此时jetson还在处于工作状态，那么就继续进行仿真，直到jetson完成工作。
-            // 只要有一个jetson处于工作状态那么仿真就会继续
-            if (!jtPtr->isIdle()) {
-                // Update
-                this->simulating = true;
-                ehsPtr->update(simSecs);
-            }
-            // Clean up
-            for (auto &ec : ecs) {
-                ec = nullptr;
-            }
-            ecs.clear();
-        }
-    }
 
-    // It means it has just ended the simulation
-    if (!this->simulating) {
-        // Simulation is over, all Jetsons are in idle mode
-        for (auto ehsPtr : this->ehsatellites) {
-            std::vector<satsim::EnergyConsumer *> ecs = ehsPtr->getEnergyConsumers();
-            auto jtPtr = dynamic_cast<satsim::JetsonTX2 *>(ecs.at(0));
-            jtPtr->logEvent(
-                    "jetson-" + std::to_string(jtPtr->getWorkerId()) + "-idle-stop",
-                    jtPtr->getSimTime()
-            );
-            // Clean up
-            for (auto &ec : ecs) {
-                ec = nullptr;
-            }
-            ecs.clear();
+        this->simulating = true;
+        std::vector<satsim::EnergyConsumer *> ecs = ehsPtr->getEnergyConsumers();
+        auto jtPtr = dynamic_cast<satsim::JetsonTX2 *>(ecs.at(0));
+        auto ciPtr = dynamic_cast<satsim::ChameleonImager *>(ecs.at(1));
+        satsim::Job *jobPtr = gtfs.at(std::floor(ehsPosn / radPerGtf));
+        // Push job onto ChameleonImager if IDLE and readyImages is empty and
+        // the ground track frame has unclaimed tasks
+        if (ciPtr->isIdle() && !ciPtr->hasImage() &&
+            jobPtr->getUnclaimedTaskCount() > 0) {
+            // For CSFP, all tasks are claimed
+            // 分配至多tasksPerJob个任务给imager。
+            jobPtr->claimTasks(ciPtr->getWorkerId(), tasksPerJob);
+            ciPtr->addClaimedJob(jobPtr);
         }
-        // Write out logs
-        std::ostringstream oss;
-        oss << "../logs/" << std::setfill('0') << std::setw(3)
-            << this->pipelineDepth;
-        logger->exportCsvs(oss.str());
+        // Transfer job from ChameleonImager to Jetson if
+        // ChameleonImager has completed work and Jetson is low on work
+        if (ciPtr->hasImage() && jtPtr->getClaimedJobCount() == 0) {
+            while (ciPtr->hasImage()) {
+                // 把chameleonImager中的任务移交给jetson
+                jtPtr->addClaimedJob(ciPtr->dequeImage());
+            }
+        }
+        // Clean up
+        for (auto &ec : ecs) {
+            ec = nullptr;
+        }
+        ecs.clear();
+        // Update
+        ehsPtr->update(simSecs);
     }
 }
 
@@ -200,4 +161,25 @@ satsim::SatJobCsfpSimulation::~SatJobCsfpSimulation() {
     for (auto &gtf : gtfs) {
         delete gtf;
     }
+}
+
+void satsim::SatJobCsfpSimulation::stop() {
+    for (auto ehsPtr : this->ehsatellites) {
+        std::vector<satsim::EnergyConsumer *> ecs = ehsPtr->getEnergyConsumers();
+        auto jtPtr = dynamic_cast<satsim::JetsonTX2 *>(ecs.at(0));
+        jtPtr->logEvent(
+                "jetson-" + std::to_string(jtPtr->getWorkerId()) + "-idle-stop",
+                jtPtr->getSimTime()
+        );
+        // Clean up
+        for (auto &ec : ecs) {
+            ec = nullptr;
+        }
+        ecs.clear();
+    }
+    // Write out logs
+    std::ostringstream oss;
+    oss << "../logs/" << std::setfill('0') << std::setw(3)
+        << this->pipelineDepth;
+    logger->exportCsvs(oss.str());
 }
