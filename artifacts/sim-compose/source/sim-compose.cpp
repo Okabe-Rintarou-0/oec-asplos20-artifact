@@ -344,7 +344,7 @@ int main(int argc, char **argv) {
 
     simulation.run();
 
-    while (centisecondCount < 1080000) { // three hours, i.e. approximately 2 revs
+    while (centisecondCount < 558000) { // three hours, i.e. approximately 2 revs
         // Prepare sim-compose data
         //// Clear active channels
         downlinks.clear();
