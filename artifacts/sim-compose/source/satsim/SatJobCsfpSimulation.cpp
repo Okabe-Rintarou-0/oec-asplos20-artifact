@@ -117,7 +117,7 @@ void satsim::SatJobCsfpSimulation::update(double simSecs) {
         std::vector<satsim::EnergyConsumer *> ecs = ehsPtr->getEnergyConsumers();
         auto jtPtr = dynamic_cast<satsim::JetsonTX2 *>(ecs.at(0));
         auto ciPtr = dynamic_cast<satsim::ChameleonImager *>(ecs.at(1));
-        satsim::Job *jobPtr = gtfs.at(std::floor(ehsPosn / radPerGtf));
+        satsim::Job *jobPtr = gtfs.at(int(std::floor(ehsPosn / radPerGtf)) % gtfs.size());
         // Push job onto ChameleonImager if IDLE and readyImages is empty and
         // the ground track frame has unclaimed tasks
         if (ciPtr->isIdle() && !ciPtr->hasImage() &&
