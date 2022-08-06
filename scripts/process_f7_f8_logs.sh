@@ -56,3 +56,12 @@ python3 fstp_coverage.py ../artifacts/fstp-mpow/logs/ ../artifacts/fstp-mpow/log
 python3 fstp_latency.py ../artifacts/fstp-mpow/logs/ ../artifacts/fstp-mpow/logs/
 python3 fstp_coverage.py ../artifacts/fstp-mprc/logs/ ../artifacts/fstp-mprc/logs/
 python3 fstp_latency.py ../artifacts/fstp-mprc/logs/ ../artifacts/fstp-mprc/logs/
+# composed
+python3 csfp_coverage.py ../artifacts/sim-compose/logs/ ../artifacts/sim-compose/logs/
+python3 csfp_latency.py ../artifacts/sim-compose/logs/ ../artifacts/sim-compose/logs/
+#python3 csfp_coverage.py ../artifacts/sim-compose/logs/ ../artifacts/sim-compose/logs/
+#python3 csfp_latency.py ../artifacts/sim-compose/logs/ ../artifacts/sim-compose/logs/
+#python3 csfp_coverage.py ../artifacts/csfp-mpow/logs/ ../artifacts/csfp-mpow/logs/
+#python3 csfp_latency.py ../artifacts/csfp-mpow/logs/ ../artifacts/csfp-mpow/logs/
+#python3 csfp_coverage.py ../artifacts/csfp-mprc/logs/ ../artifacts/csfp-mprc/logs/
+#python3 csfp_latency.py ../artifacts/csfp-mprc/logs/ ../artifacts/csfp-mprc/logs/

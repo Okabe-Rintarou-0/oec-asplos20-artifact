@@ -20,8 +20,10 @@
 # the License.
 
 source p3-env/bin/activate
+mkdir -p ../plots/compose
 python3 plot_f8a.py ../artifacts/ ../plots/
 python3 plot_f8b.py ../artifacts/ ../plots/
 python3 plot_f8c.py ../artifacts/ ../plots/
 python3 plot_f8d.py ../artifacts/ ../plots/
+python3 plot_f8e.py ../artifacts  ../plots/compose/
 deactivate

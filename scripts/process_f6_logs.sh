@@ -63,7 +63,7 @@ function get_mb_per_collect {
   fi
 }
 
-for sat_config in cs fs os
+for sat_config in cs fs os compose
 do
   for constellation in planet spacex spire
   do
